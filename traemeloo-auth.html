@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TraemeLoo — Iniciar Sesión</title>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --brand: #FF3C2F; --brand-dark: #C42A1E; --brand-light: #FF6B61;
+    --bg: #0A0A0A; --bg2: #141414; --bg3: #1E1E1E; --surface: #252525;
+    --border: #2E2E2E; --text: #F5F5F0; --text2: #A0A0A0; --text3: #5A5A5A;
+    --green: #1DDB8B; --yellow: #FFD94A; --blue: #4A9EFF;
+    --radius: 16px; --radius-sm: 10px;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family:'DM Sans',sans-serif; background:var(--bg); color:var(--text);
+    min-height:100vh; display:flex; overflow:hidden;
+  }
+
+  /* LEFT PANEL */
+  .left-panel {
+    width: 45%; background:var(--bg2); border-right:1px solid var(--border);
+    display:flex; flex-direction:column; justify-content:center; align-items:center;
+    padding:60px; position:relative; overflow:hidden;
+  }
+  .left-bg {
+    position:absolute; inset:0;
+    background:radial-gradient(ellipse 70% 60% at 30% 50%, rgba(255,60,47,0.12) 0%, transparent 70%);
+  }
+  .left-grid {
+    position:absolute; inset:0; opacity:0.03;
+    background-image:linear-gradient(var(--border) 1px,transparent 1px),
+                     linear-gradient(90deg,var(--border) 1px,transparent 1px);
+    background-size:32px 32px;
+  }
+  .left-content { position:relative; z-index:1; text-align:center; max-width:340px; }
+  .brand-logo {
+    font-family:'Unbounded',sans-serif; font-weight:900; font-size:36px;
+    color:var(--brand); margin-bottom:4px; letter-spacing:-1px;
+  }
+  .brand-logo span { color:var(--text); }
+  .brand-tagline { font-size:14px; color:var(--text3); margin-bottom:48px; }
+  .feature-list { display:flex; flex-direction:column; gap:20px; text-align:left; }
+  .feature {
+    display:flex; align-items:flex-start; gap:14px;
+    animation: fadeUp .5s ease both;
+  }
+  .feature:nth-child(1){animation-delay:.1s}
+  .feature:nth-child(2){animation-delay:.2s}
+  .feature:nth-child(3){animation-delay:.3s}
+  .feature:nth-child(4){animation-delay:.4s}
+  .feature-icon {
+    width:40px; height:40px; border-radius:10px; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center; font-size:20px;
+    background:var(--bg3); border:1px solid var(--border);
+  }
+  .feature-text h4 { font-size:14px; font-weight:600; margin-bottom:3px; }
+  .feature-text p { font-size:12px; color:var(--text2); line-height:1.5; }
+  .left-bottom {
+    position:absolute; bottom:32px; left:0; right:0; text-align:center;
+    font-size:12px; color:var(--text3);
+  }
+
+  /* RIGHT PANEL */
+  .right-panel {
+    flex:1; display:flex; flex-direction:column;
+    justify-content:center; align-items:center; padding:40px;
+    overflow-y:auto;
+  }
+  .auth-box { width:100%; max-width:420px; }
+
+  /* ROLE SELECTOR */
+  .role-selector {
+    display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:28px;
+  }
+  .role-btn {
+    background:var(--bg2); border:1.5px solid var(--border);
+    border-radius:var(--radius-sm); padding:12px 8px;
+    cursor:pointer; transition:all .2s; text-align:center;
+    display:flex; flex-direction:column; align-items:center; gap:6px;
+  }
+  .role-btn:hover { border-color:var(--text3); }
+  .role-btn.active { border-color:var(--brand); background:rgba(255,60,47,0.08); }
+  .role-btn .role-icon { font-size:22px; }
+  .role-btn .role-name { font-size:12px; font-weight:500; color:var(--text2); }
+  .role-btn.active .role-name { color:var(--brand); }
+
+  /* TABS */
+  .auth-tabs {
+    display:flex; background:var(--bg2); border:1px solid var(--border);
+    border-radius:50px; padding:4px; margin-bottom:28px;
+  }
+  .auth-tab {
+    flex:1; padding:9px; border-radius:50px; text-align:center;
+    cursor:pointer; font-size:14px; font-weight:500; color:var(--text2);
+    transition:all .2s;
+  }
+  .auth-tab.active { background:var(--brand); color:#fff; }
+
+  /* FORM */
+  .auth-title {
+    font-family:'Unbounded',sans-serif; font-size:22px; font-weight:700;
+    margin-bottom:6px;
+  }
+  .auth-subtitle { font-size:14px; color:var(--text2); margin-bottom:28px; }
+
+  .form-group { margin-bottom:16px; }
+  .form-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .form-group label { display:block; font-size:12px; color:var(--text2); margin-bottom:6px; font-weight:500; letter-spacing:0.3px; }
+  .form-group input, .form-group select {
+    width:100%; background:var(--bg2); border:1.5px solid var(--border);
+    color:var(--text); border-radius:var(--radius-sm); padding:12px 14px;
+    font-family:'DM Sans',sans-serif; font-size:14px; outline:none;
+    transition:border-color .2s;
+  }
+  .form-group input:focus, .form-group select:focus { border-color:var(--brand); }
+  .form-group input::placeholder { color:var(--text3); }
+  .form-group select option { background:var(--bg2); }
+
+  .input-with-icon { position:relative; }
+  .input-with-icon input { padding-left:40px; }
+  .input-icon { position:absolute; left:14px; top:50%; transform:translateY(-50%); font-size:16px; color:var(--text3); }
+  .toggle-password {
+    position:absolute; right:14px; top:50%; transform:translateY(-50%);
+    background:none; border:none; cursor:pointer; color:var(--text3);
+    font-size:14px; transition:color .2s;
+  }
+  .toggle-password:hover { color:var(--text); }
+
+  .form-hint { font-size:11px; color:var(--text3); margin-top:4px; }
+
+  .submit-btn {
+    width:100%; background:var(--brand); color:#fff; border:none; cursor:pointer;
+    font-family:'DM Sans',sans-serif; font-weight:600; font-size:15px;
+    padding:14px; border-radius:var(--radius-sm); transition:all .2s;
+    margin-top:8px; position:relative; overflow:hidden;
+  }
+  .submit-btn:hover { background:var(--brand-dark); transform:translateY(-1px); box-shadow:0 8px 24px rgba(255,60,47,0.3); }
+  .submit-btn:disabled { opacity:0.6; cursor:not-allowed; transform:none; }
+  .submit-btn .btn-spinner {
+    display:none; width:18px; height:18px; border:2px solid rgba(255,255,255,0.3);
+    border-top-color:#fff; border-radius:50%; animation:spin .7s linear infinite;
+    margin:0 auto;
+  }
+  .submit-btn.loading .btn-text { display:none; }
+  .submit-btn.loading .btn-spinner { display:block; }
+
+  .divider { display:flex; align-items:center; gap:12px; margin:20px 0; }
+  .divider-line { flex:1; height:1px; background:var(--border); }
+  .divider-text { font-size:12px; color:var(--text3); }
+
+  .terms { font-size:12px; color:var(--text3); text-align:center; margin-top:16px; line-height:1.5; }
+  .terms a { color:var(--brand); text-decoration:none; }
+
+  /* SUCCESS / ERROR */
+  .alert {
+    padding:12px 16px; border-radius:var(--radius-sm); margin-bottom:16px;
+    font-size:13px; display:none; align-items:center; gap:10px;
+  }
+  .alert.show { display:flex; }
+  .alert.success { background:rgba(29,219,139,0.1); border:1px solid rgba(29,219,139,0.3); color:var(--green); }
+  .alert.error { background:rgba(255,60,47,0.1); border:1px solid rgba(255,60,47,0.3); color:var(--brand-light); }
+
+  /* PENDING STATE */
+  .pending-box {
+    text-align:center; padding:32px; display:none;
+  }
+  .pending-box.show { display:block; }
+  .pending-icon { font-size:48px; margin-bottom:16px; }
+  .pending-title { font-family:'Unbounded',sans-serif; font-size:18px; font-weight:700; margin-bottom:8px; }
+  .pending-text { font-size:14px; color:var(--text2); line-height:1.6; }
+
+  /* ANIMATIONS */
+  @keyframes fadeUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes spin { to{transform:rotate(360deg)} }
+  .fade-in { animation:fadeUp .3s ease both; }
+
+  /* RESPONSIVE */
+  @media (max-width:768px) {
+    .left-panel { display:none; }
+    .right-panel { padding:24px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- LEFT PANEL -->
+<div class="left-panel">
+  <div class="left-bg"></div>
+  <div class="left-grid"></div>
+  <div class="left-content">
+    <div class="brand-logo">Traeme<span>Loo</span></div>
+    <div class="brand-tagline">Plataforma de entrega · República Dominicana</div>
+    <div class="feature-list">
+      <div class="feature">
+        <div class="feature-icon">🛍️</div>
+        <div class="feature-text">
+          <h4>Compra en tiendas locales</h4>
+          <p>Cientos de tiendas cerca de ti, entregadas en 30 minutos.</p>
+        </div>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">🏪</div>
+        <div class="feature-text">
+          <h4>Vende en nuestra plataforma</h4>
+          <p>Abre tu tienda y llega a miles de clientes sin esfuerzo.</p>
+        </div>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">🛵</div>
+        <div class="feature-text">
+          <h4>Genera ingresos entregando</h4>
+          <p>Trabaja cuando quieras y gana dinero en tu zona.</p>
+        </div>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">⚡</div>
+        <div class="feature-text">
+          <h4>Seguro y confiable</h4>
+          <p>Pagos protegidos, seguimiento en tiempo real.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="left-bottom">© 2026 TraemeLoo · República Dominicana</div>
+</div>
+
+<!-- RIGHT PANEL -->
+<div class="right-panel">
+  <div class="auth-box">
+
+    <!-- ROLE SELECTOR -->
+    <div class="role-selector" id="roleSelector">
+      <button class="role-btn active" onclick="setRole('CUSTOMER', this)">
+        <span class="role-icon">🛍️</span>
+        <span class="role-name">Cliente</span>
+      </button>
+      <button class="role-btn" onclick="setRole('SELLER', this)">
+        <span class="role-icon">🏪</span>
+        <span class="role-name">Vendedor</span>
+      </button>
+      <button class="role-btn" onclick="setRole('DRIVER', this)">
+        <span class="role-icon">🛵</span>
+        <span class="role-name">Motorista</span>
+      </button>
+      <button class="role-btn" onclick="setRole('ADMIN', this)">
+        <span class="role-icon">⚙️</span>
+        <span class="role-name">Admin</span>
+      </button>
+    </div>
+
+    <!-- TABS -->
+    <div class="auth-tabs">
+      <div class="auth-tab active" onclick="setTab('login', this)">Iniciar Sesión</div>
+      <div class="auth-tab" onclick="setTab('register', this)" id="registerTab">Registrarse</div>
+    </div>
+
+    <!-- ALERT -->
+    <div class="alert" id="alertBox">
+      <span id="alertIcon">✓</span>
+      <span id="alertMsg"></span>
+    </div>
+
+    <!-- PENDING BOX (shown after seller/driver registration) -->
+    <div class="pending-box" id="pendingBox">
+      <div class="pending-icon">⏳</div>
+      <div class="pending-title">Solicitud Enviada</div>
+      <div class="pending-text" id="pendingText"></div>
+      <button class="submit-btn" style="margin-top:24px;" onclick="showLogin()">Volver al Inicio de Sesión</button>
+    </div>
+
+    <!-- ======================== -->
+    <!-- LOGIN FORM -->
+    <!-- ======================== -->
+    <div id="loginForm" class="fade-in">
+      <div class="auth-title" id="loginTitle">Bienvenido de vuelta</div>
+      <div class="auth-subtitle" id="loginSubtitle">Inicia sesión en tu cuenta de cliente</div>
+
+      <div class="form-group">
+        <label>Teléfono</label>
+        <div class="input-with-icon">
+          <span class="input-icon">📱</span>
+          <input type="tel" id="loginPhone" placeholder="809-000-0000">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Contraseña</label>
+        <div class="input-with-icon">
+          <span class="input-icon">🔒</span>
+          <input type="password" id="loginPassword" placeholder="Tu contraseña">
+          <button class="toggle-password" onclick="togglePass('loginPassword', this)">👁</button>
+        </div>
+      </div>
+
+      <button class="submit-btn" onclick="handleLogin()" id="loginBtn">
+        <span class="btn-text">Iniciar Sesión</span>
+        <div class="btn-spinner"></div>
+      </button>
+
+      <div class="terms">
+        ¿No tienes cuenta? <a href="#" onclick="setTab('register', document.querySelectorAll('.auth-tab')[1])">Regístrate gratis</a>
+      </div>
+    </div>
+
+    <!-- ======================== -->
+    <!-- REGISTER FORM - CUSTOMER -->
+    <!-- ======================== -->
+    <div id="registerCustomer" style="display:none;" class="fade-in">
+      <div class="auth-title">Crea tu cuenta</div>
+      <div class="auth-subtitle">Regístrate como cliente y empieza a comprar</div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Nombre</label>
+          <input type="text" id="cName" placeholder="Juan">
+        </div>
+        <div class="form-group">
+          <label>Apellido</label>
+          <input type="text" id="cLastname" placeholder="Pérez">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Teléfono</label>
+        <div class="input-with-icon">
+          <span class="input-icon">📱</span>
+          <input type="tel" id="cPhone" placeholder="809-000-0000">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Correo electrónico <span style="color:var(--text3)">(opcional)</span></label>
+        <div class="input-with-icon">
+          <span class="input-icon">✉️</span>
+          <input type="email" id="cEmail" placeholder="juan@correo.com">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Contraseña</label>
+        <div class="input-with-icon">
+          <span class="input-icon">🔒</span>
+          <input type="password" id="cPassword" placeholder="Mínimo 6 caracteres">
+          <button class="toggle-password" onclick="togglePass('cPassword', this)">👁</button>
+        </div>
+        <div class="form-hint">Mínimo 6 caracteres</div>
+      </div>
+
+      <button class="submit-btn" onclick="handleRegisterCustomer()" id="regCustBtn">
+        <span class="btn-text">Crear Cuenta</span>
+        <div class="btn-spinner"></div>
+      </button>
+      <div class="terms">Al registrarte aceptas nuestros <a href="#">Términos de Uso</a> y <a href="#">Política de Privacidad</a></div>
+    </div>
+
+    <!-- ======================== -->
+    <!-- REGISTER FORM - SELLER -->
+    <!-- ======================== -->
+    <div id="registerSeller" style="display:none;" class="fade-in">
+      <div class="auth-title">Abre tu tienda</div>
+      <div class="auth-subtitle">Vende en TraemeLoo y llega a más clientes</div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Tu nombre</label>
+          <input type="text" id="sName" placeholder="Juan Pérez">
+        </div>
+        <div class="form-group">
+          <label>Teléfono</label>
+          <input type="tel" id="sPhone" placeholder="809-000-0000">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Contraseña</label>
+        <div class="input-with-icon">
+          <span class="input-icon">🔒</span>
+          <input type="password" id="sPassword" placeholder="Mínimo 6 caracteres">
+          <button class="toggle-password" onclick="togglePass('sPassword', this)">👁</button>
+        </div>
+      </div>
+
+      <div class="divider"><div class="divider-line"></div><span class="divider-text">Datos de tu tienda</span><div class="divider-line"></div></div>
+
+      <div class="form-group">
+        <label>Nombre de la tienda</label>
+        <div class="input-with-icon">
+          <span class="input-icon">🏪</span>
+          <input type="text" id="sShopName" placeholder="ej. TechZone Santiago">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Categoría</label>
+        <select id="sCategory">
+          <option value="">Selecciona una categoría</option>
+          <option>Electrónica</option>
+          <option>Moda</option>
+          <option>Hogar y Decoración</option>
+          <option>Belleza</option>
+          <option>Deportes</option>
+          <option>Niños y Juguetes</option>
+          <option>Repuestos</option>
+          <option>Jardín</option>
+          <option>Libros</option>
+          <option>Mascotas</option>
+          <option>Otro</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Dirección de la tienda</label>
+        <div class="input-with-icon">
+          <span class="input-icon">📍</span>
+          <input type="text" id="sAddress" placeholder="C/ del Sol #42, Santiago">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Descripción <span style="color:var(--text3)">(opcional)</span></label>
+        <input type="text" id="sDescription" placeholder="¿Qué vende tu tienda?">
+      </div>
+
+      <button class="submit-btn" onclick="handleRegisterSeller()" id="regSellBtn">
+        <span class="btn-text">Enviar Solicitud</span>
+        <div class="btn-spinner"></div>
+      </button>
+      <div class="terms">Tu tienda será revisada por nuestro equipo en 24-48 horas.</div>
+    </div>
+
+    <!-- ======================== -->
+    <!-- REGISTER FORM - DRIVER -->
+    <!-- ======================== -->
+    <div id="registerDriver" style="display:none;" class="fade-in">
+      <div class="auth-title">Únete como motorista</div>
+      <div class="auth-subtitle">Genera ingresos entregando en tu zona</div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Nombre completo</label>
+          <input type="text" id="dName" placeholder="Carlos Díaz">
+        </div>
+        <div class="form-group">
+          <label>Teléfono</label>
+          <input type="tel" id="dPhone" placeholder="809-000-0000">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Contraseña</label>
+        <div class="input-with-icon">
+          <span class="input-icon">🔒</span>
+          <input type="password" id="dPassword" placeholder="Mínimo 6 caracteres">
+          <button class="toggle-password" onclick="togglePass('dPassword', this)">👁</button>
+        </div>
+      </div>
+
+      <div class="divider"><div class="divider-line"></div><span class="divider-text">Datos del vehículo</span><div class="divider-line"></div></div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Tipo de vehículo</label>
+          <select id="dVehicle">
+            <option value="moto">🛵 Moto</option>
+            <option value="carro">🚗 Carro</option>
+            <option value="bicicleta">🚲 Bicicleta</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Placa</label>
+          <input type="text" id="dPlate" placeholder="A123456">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>No. Licencia de conducir</label>
+        <input type="text" id="dLicense" placeholder="Número de licencia">
+      </div>
+
+      <button class="submit-btn" onclick="handleRegisterDriver()" id="regDrvBtn">
+        <span class="btn-text">Enviar Solicitud</span>
+        <div class="btn-spinner"></div>
+      </button>
+      <div class="terms">Tu solicitud será revisada por nuestro equipo. Te contactaremos al teléfono indicado.</div>
+    </div>
+
+    <!-- ======================== -->
+    <!-- ADMIN LOGIN (same as login but filtered) -->
+    <!-- ======================== -->
+
+  </div>
+</div>
+
+<script>
+  // ================================
+  // STATE
+  // ================================
+  let currentRole = 'CUSTOMER';
+  let currentTab = 'login';
+  const API = 'http://localhost:3000/api';
+
+  // ================================
+  // ROLE SWITCHING
+  // ================================
+  function setRole(role, btn) {
+    currentRole = role;
+    document.querySelectorAll('.role-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    updateUI();
+  }
+
+  function setTab(tab, el) {
+    currentTab = tab;
+    document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+    el.classList.add('active');
+    updateUI();
+    clearAlert();
+  }
+
+  function updateUI() {
+    // Hide all forms
+    document.getElementById('loginForm').style.display = 'none';
+    document.getElementById('registerCustomer').style.display = 'none';
+    document.getElementById('registerSeller').style.display = 'none';
+    document.getElementById('registerDriver').style.display = 'none';
+    document.getElementById('pendingBox').classList.remove('show');
+
+    // Hide register tab for admin
+    document.getElementById('registerTab').style.display = currentRole === 'ADMIN' ? 'none' : '';
+    if (currentRole === 'ADMIN') currentTab = 'login';
+
+    if (currentTab === 'login') {
+      document.getElementById('loginForm').style.display = 'block';
+      const titles = {
+        CUSTOMER: ['Bienvenido de vuelta', 'Inicia sesión en tu cuenta de cliente'],
+        SELLER: ['Portal del Vendedor', 'Inicia sesión para gestionar tu tienda'],
+        DRIVER: ['App del Motorista', 'Inicia sesión para ver tus entregas'],
+        ADMIN: ['Panel de Administración', 'Acceso restringido al equipo TraemeLoo'],
+      };
+      document.getElementById('loginTitle').textContent = titles[currentRole][0];
+      document.getElementById('loginSubtitle').textContent = titles[currentRole][1];
+    } else {
+      if (currentRole === 'CUSTOMER') document.getElementById('registerCustomer').style.display = 'block';
+      if (currentRole === 'SELLER') document.getElementById('registerSeller').style.display = 'block';
+      if (currentRole === 'DRIVER') document.getElementById('registerDriver').style.display = 'block';
+    }
+  }
+
+  // ================================
+  // ALERT
+  // ================================
+  function showAlert(msg, type = 'error') {
+    const box = document.getElementById('alertBox');
+    document.getElementById('alertMsg').textContent = msg;
+    document.getElementById('alertIcon').textContent = type === 'success' ? '✓' : '✕';
+    box.className = `alert show ${type}`;
+  }
+  function clearAlert() {
+    document.getElementById('alertBox').className = 'alert';
+  }
+
+  // ================================
+  // TOGGLE PASSWORD
+  // ================================
+  function togglePass(id, btn) {
+    const input = document.getElementById(id);
+    input.type = input.type === 'password' ? 'text' : 'password';
+    btn.textContent = input.type === 'password' ? '👁' : '🙈';
+  }
+
+  // ================================
+  // LOADING STATE
+  // ================================
+  function setLoading(btnId, loading) {
+    const btn = document.getElementById(btnId);
+    btn.classList.toggle('loading', loading);
+    btn.disabled = loading;
+  }
+
+  // ================================
+  // REDIRECT AFTER LOGIN
+  // ================================
+  function redirectUser(role) {
+    const redirects = {
+      CUSTOMER: 'traemeloo-cliente.html',
+      SELLER:   'traemeloo-vendedor.html',
+      DRIVER:   'traemeloo-motorista.html',
+      ADMIN:    'traemeloo-admin.html',
+    };
+    setTimeout(() => {
+      window.location.href = redirects[role] || 'traemeloo-cliente.html';
+    }, 800);
+  }
+
+  // ================================
+  // LOGIN
+  // ================================
+  async function handleLogin() {
+    clearAlert();
+    const phone = document.getElementById('loginPhone').value.trim();
+    const password = document.getElementById('loginPassword').value;
+
+    if (!phone || !password) return showAlert('Completa todos los campos');
+
+    setLoading('loginBtn', true);
+    try {
+      const res = await fetch(`${API}/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone, password }),
+      });
+      const data = await res.json();
+
+      if (!res.ok) return showAlert(data.error || 'Error al iniciar sesión');
+
+      // Save tokens
+      localStorage.setItem('tl_token', data.accessToken);
+      localStorage.setItem('tl_refresh', data.refreshToken);
+      localStorage.setItem('tl_user', JSON.stringify(data.user));
+
+      showAlert('¡Bienvenido! Redirigiendo...', 'success');
+      redirectUser(data.user.role);
+    } catch (err) {
+      showAlert('No se pudo conectar al servidor. ¿Está corriendo el backend?');
+    } finally {
+      setLoading('loginBtn', false);
+    }
+  }
+
+  // ================================
+  // REGISTER CUSTOMER
+  // ================================
+  async function handleRegisterCustomer() {
+    clearAlert();
+    const name = (document.getElementById('cName').value + ' ' + document.getElementById('cLastname').value).trim();
+    const phone = document.getElementById('cPhone').value.trim();
+    const email = document.getElementById('cEmail').value.trim();
+    const password = document.getElementById('cPassword').value;
+
+    if (!name || !phone || !password) return showAlert('Completa todos los campos obligatorios');
+    if (password.length < 6) return showAlert('La contraseña debe tener al menos 6 caracteres');
+
+    setLoading('regCustBtn', true);
+    try {
+      const res = await fetch(`${API}/auth/register/customer`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, phone, email, password }),
+      });
+      const data = await res.json();
+      if (!res.ok) return showAlert(data.error || data.errors?.[0]?.msg || 'Error al registrarse');
+
+      localStorage.setItem('tl_token', data.accessToken);
+      localStorage.setItem('tl_refresh', data.refreshToken);
+      localStorage.setItem('tl_user', JSON.stringify(data.user));
+
+      showAlert('¡Cuenta creada! Redirigiendo...', 'success');
+      redirectUser('CUSTOMER');
+    } catch (err) {
+      showAlert('No se pudo conectar al servidor.');
+    } finally {
+      setLoading('regCustBtn', false);
+    }
+  }
+
+  // ================================
+  // REGISTER SELLER
+  // ================================
+  async function handleRegisterSeller() {
+    clearAlert();
+    const name = document.getElementById('sName').value.trim();
+    const phone = document.getElementById('sPhone').value.trim();
+    const password = document.getElementById('sPassword').value;
+    const shopName = document.getElementById('sShopName').value.trim();
+    const shopCategory = document.getElementById('sCategory').value;
+    const shopAddress = document.getElementById('sAddress').value.trim();
+    const shopDescription = document.getElementById('sDescription').value.trim();
+
+    if (!name || !phone || !password || !shopName || !shopCategory || !shopAddress) {
+      return showAlert('Completa todos los campos obligatorios');
+    }
+
+    setLoading('regSellBtn', true);
+    try {
+      const res = await fetch(`${API}/auth/register/seller`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, phone, password, shopName, shopCategory, shopAddress, shopDescription }),
+      });
+      const data = await res.json();
+      if (!res.ok) return showAlert(data.error || 'Error al enviar solicitud');
+
+      showPending('vendedor');
+    } catch (err) {
+      showAlert('No se pudo conectar al servidor.');
+    } finally {
+      setLoading('regSellBtn', false);
+    }
+  }
+
+  // ================================
+  // REGISTER DRIVER
+  // ================================
+  async function handleRegisterDriver() {
+    clearAlert();
+    const name = document.getElementById('dName').value.trim();
+    const phone = document.getElementById('dPhone').value.trim();
+    const password = document.getElementById('dPassword').value;
+    const vehicleType = document.getElementById('dVehicle').value;
+    const vehiclePlate = document.getElementById('dPlate').value.trim();
+    const licenseNum = document.getElementById('dLicense').value.trim();
+
+    if (!name || !phone || !password) return showAlert('Completa todos los campos obligatorios');
+
+    setLoading('regDrvBtn', true);
+    try {
+      const res = await fetch(`${API}/auth/register/driver`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, phone, password, vehicleType, vehiclePlate, licenseNum }),
+      });
+      const data = await res.json();
+      if (!res.ok) return showAlert(data.error || 'Error al enviar solicitud');
+
+      showPending('motorista');
+    } catch (err) {
+      showAlert('No se pudo conectar al servidor.');
+    } finally {
+      setLoading('regDrvBtn', false);
+    }
+  }
+
+  // ================================
+  // PENDING STATE
+  // ================================
+  function showPending(type) {
+    document.getElementById('registerSeller').style.display = 'none';
+    document.getElementById('registerDriver').style.display = 'none';
+    const msgs = {
+      vendedor: 'Tu solicitud como <strong>vendedor</strong> fue enviada exitosamente.<br><br>Nuestro equipo revisará tu tienda en las próximas <strong>24-48 horas</strong> y te contactaremos al número que registraste.',
+      motorista: 'Tu solicitud como <strong>motorista</strong> fue enviada exitosamente.<br><br>Nuestro equipo revisará tu información en las próximas <strong>24-48 horas</strong> y te contactaremos para coordinar la incorporación.',
+    };
+    document.getElementById('pendingText').innerHTML = msgs[type];
+    document.getElementById('pendingBox').classList.add('show');
+  }
+
+  function showLogin() {
+    currentTab = 'login';
+    document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.auth-tab')[0].classList.add('active');
+    updateUI();
+  }
+
+  // ================================
+  // ENTER KEY
+  // ================================
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      if (currentTab === 'login') handleLogin();
+    }
+  });
+
+  // Check if already logged in
+  const token = localStorage.getItem('tl_token');
+  const user = JSON.parse(localStorage.getItem('tl_user') || 'null');
+  if (token && user) redirectUser(user.role);
+</script>
+</body>
+</html>
