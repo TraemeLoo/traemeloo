@@ -599,8 +599,8 @@
       btn.disabled = false;
     };
 
-    var elements = stripeInstance.elements();
-    var cardElement = elements.create('card', {
+    var elements = stripeInstance.elements({ locale: 'es' });
+    var cardElement = elements.create('card', { hidePostalCode: true,
       style: { base: { color: '#F5F5F0', fontFamily: 'DM Sans, sans-serif', fontSize: '15px', '::placeholder': { color: '#5A5A5A' } } }
     });
     cardElement.mount('#card-element');
