@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TraemeLoo — App del Motorista</title>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --brand: #FF3C2F; --brand-dark: #C42A1E;
+    --bg: #0A0A0F; --bg2: #12121A; --bg3: #1A1A25; --surface: #222230;
+    --border: #28283A; --text: #F0F0F8; --text2: #7878A0; --text3: #3C3C58;
+    --green: #00E5A0; --yellow: #FFD94A; --orange: #FF8C42; --blue: #5B9BFF;
+    --radius: 20px; --radius-sm: 12px;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'DM Sans',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; display:flex; align-items:center; justify-content:center; padding:20px; }
+
+  .phone { width:390px; min-height:780px; background:var(--bg2); border-radius:40px; border:2px solid var(--border); box-shadow:0 40px 120px rgba(0,0,0,0.8), 0 0 0 8px #0A0A0F; overflow:hidden; display:flex; flex-direction:column; position:relative; }
+  .phone-notch { background:var(--bg); height:36px; display:flex; align-items:center; justify-content:center; border-radius:0 0 20px 20px; margin:8px auto; width:120px; flex-shrink:0; }
+  .phone-notch::after { content:''; width:80px; height:6px; border-radius:3px; background:var(--bg3); }
+  .phone-screen { flex:1; overflow-y:auto; scrollbar-width:none; }
+  .phone-screen::-webkit-scrollbar { display:none; }
+
+  .status-bar { padding:0 24px 8px; display:flex; justify-content:space-between; align-items:center; font-size:12px; color:var(--text2); }
+
+  .driver-header { padding:16px 24px 20px; }
+  .driver-greeting { font-size:13px; color:var(--text2); margin-bottom:4px; }
+  .driver-name { font-family:'Unbounded',sans-serif; font-size:22px; font-weight:700; }
+  .online-toggle-row { display:flex; align-items:center; justify-content:space-between; margin-top:16px; background:var(--bg3); border-radius:var(--radius-sm); padding:14px 18px; border:1px solid var(--border); }
+  .online-label { font-size:14px; font-weight:500; }
+  .online-label small { display:block; font-size:12px; color:var(--green); margin-top:2px; }
+  .big-toggle { width:56px; height:30px; border-radius:15px; background:var(--green); border:none; cursor:pointer; position:relative; transition:background .3s; }
+  .big-toggle::after { content:''; position:absolute; width:22px; height:22px; border-radius:50%; background:#fff; top:4px; right:4px; transition:right .3s; }
+  .big-toggle.off { background:var(--surface); }
+  .big-toggle.off::after { right:30px; }
+
+  .today-stats { display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; padding:0 24px 20px; }
+  .today-stat { background:var(--bg3); border:1px solid var(--border); border-radius:var(--radius-sm); padding:14px 12px; text-align:center; }
+  .today-stat-val { font-family:'Unbounded',sans-serif; font-size:20px; font-weight:700; }
+  .today-stat-val.green { color:var(--green); } .today-stat-val.blue { color:var(--blue); } .today-stat-val.yellow { color:var(--yellow); }
+  .today-stat-label { font-size:11px; color:var(--text2); margin-top:4px; }
+
+  .section-label { padding:0 24px 12px; font-family:'Unbounded',sans-serif; font-size:13px; font-weight:700; }
+
+  .active-delivery { margin:0 16px 20px; background:linear-gradient(135deg,rgba(255,60,47,0.15) 0%,rgba(255,60,47,0.05) 100%); border:1.5px solid rgba(255,60,47,0.4); border-radius:var(--radius); padding:20px; position:relative; overflow:hidden; }
+  .active-delivery::before { content:'🔴 ACTIVO'; position:absolute; top:14px; right:14px; font-size:10px; font-weight:700; color:var(--brand); background:rgba(255,60,47,0.15); padding:3px 10px; border-radius:50px; animation:blink 1.5s infinite; }
+  @keyframes blink { 0%,100%{opacity:1}50%{opacity:0.4} }
+  .delivery-order-id { font-size:12px; color:var(--brand); font-weight:700; margin-bottom:10px; }
+  .delivery-route { display:flex; flex-direction:column; gap:8px; margin-bottom:16px; }
+  .route-point { display:flex; align-items:flex-start; gap:10px; }
+  .route-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; margin-top:4px; }
+  .route-dot.pickup { background:var(--blue); }
+  .route-dot.dropoff { background:var(--green); }
+  .route-line { width:2px; height:20px; background:var(--border); margin:2px 0 2px 4px; }
+  .route-text-label { font-size:11px; color:var(--text2); font-weight:600; text-transform:uppercase; letter-spacing:0.5px; }
+  .route-text-addr { font-size:14px; font-weight:500; margin-top:2px; }
+  .delivery-actions { display:flex; gap:8px; }
+  .del-btn { flex:1; padding:12px; border-radius:var(--radius-sm); border:none; cursor:pointer; font-family:'DM Sans',sans-serif; font-weight:600; font-size:13px; transition:all .2s; }
+  .del-btn.primary { background:var(--brand); color:#fff; }
+  .del-btn.primary:hover { background:var(--brand-dark); }
+  .del-btn.secondary { background:var(--bg3); color:var(--text2); border:1px solid var(--border); }
+  .del-btn.secondary:hover { border-color:var(--brand); color:var(--brand); }
+
+  .step { display:flex; flex-direction:column; align-items:center; flex:1; }
+  .step-dot { width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; margin-bottom:4px; border:2px solid var(--border); }
+  .step-dot.done { background:var(--green); border-color:var(--green); color:#000; }
+  .step-dot.current { background:var(--brand); border-color:var(--brand); color:#fff; animation:pulse 1.5s infinite; }
+  .step-dot.pending { background:var(--bg3); color:var(--text3); }
+  @keyframes pulse { 0%,100%{box-shadow:0 0 0 0 rgba(255,60,47,0.4)} 50%{box-shadow:0 0 0 8px rgba(255,60,47,0)} }
+  .step-label { font-size:10px; color:var(--text2); text-align:center; }
+  .step-connector { height:2px; flex:1; background:var(--border); margin-bottom:16px; }
+  .step-connector.done { background:var(--green); }
+
+  .order-queue { padding:0 16px; }
+  .queue-card { background:var(--bg3); border:1px solid var(--border); border-radius:var(--radius-sm); padding:16px; margin-bottom:10px; transition:all .2s; }
+  .queue-card:hover { border-color:var(--blue); }
+  .queue-top { display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
+  .queue-id { font-size:12px; color:var(--blue); font-weight:700; font-family:'Unbounded',sans-serif; }
+  .queue-pay { font-size:16px; font-weight:700; color:var(--green); }
+  .queue-route { font-size:13px; color:var(--text2); margin-bottom:12px; }
+  .queue-meta { display:flex; gap:12px; font-size:12px; color:var(--text2); margin-bottom:12px; }
+  .queue-meta span { display:flex; align-items:center; gap:4px; }
+  .accept-btn { width:100%; padding:12px; border-radius:var(--radius-sm); background:var(--green); color:#000; border:none; cursor:pointer; font-family:'DM Sans',sans-serif; font-weight:700; font-size:14px; transition:all .2s; }
+  .accept-btn:hover { transform:translateY(-1px); box-shadow:0 4px 20px rgba(0,229,160,0.3); }
+
+  .map-placeholder { margin:0 16px 20px; height:160px; background:var(--bg3); border-radius:var(--radius-sm); border:1px solid var(--border); display:flex; align-items:center; justify-content:center; flex-direction:column; gap:8px; color:var(--text3); position:relative; overflow:hidden; }
+  .map-grid { position:absolute; inset:0; opacity:0.15; background-image:linear-gradient(var(--border) 1px,transparent 1px), linear-gradient(90deg,var(--border) 1px,transparent 1px); background-size:20px 20px; }
+  .map-pin { font-size:32px; position:relative; z-index:1; }
+  .map-label { font-size:13px; position:relative; z-index:1; color:var(--text2); }
+
+  .bottom-nav { padding:12px 16px 20px; border-top:1px solid var(--border); display:flex; justify-content:space-around; background:var(--bg2); flex-shrink:0; }
+  .bottom-nav-item { display:flex; flex-direction:column; align-items:center; gap:4px; cursor:pointer; padding:8px 12px; border-radius:var(--radius-sm); transition:all .15s; color:var(--text3); flex:1; }
+  .bottom-nav-item.active { color:var(--brand); background:rgba(255,60,47,0.08); }
+  .bottom-nav-icon { font-size:22px; }
+  .bottom-nav-label { font-size:10px; font-weight:500; }
+
+  .earnings-pill { margin:0 16px 20px; background:linear-gradient(135deg,rgba(0,229,160,0.12) 0%,rgba(91,155,255,0.12) 100%); border:1px solid rgba(0,229,160,0.25); border-radius:var(--radius-sm); padding:16px 20px; display:flex; align-items:center; justify-content:space-between; }
+  .ep-label { font-size:12px; color:var(--text2); margin-bottom:4px; }
+  .ep-val { font-family:'Unbounded',sans-serif; font-size:22px; font-weight:700; color:var(--green); }
+  .ep-icon { font-size:36px; }
+
+  .toast { position:fixed; bottom:20px; left:50%; transform:translateX(-50%) translateY(60px); background:var(--green); color:#000; padding:12px 24px; border-radius:50px; font-weight:700; font-size:13px; z-index:999; pointer-events:none; transition:transform .3s; white-space:nowrap; }
+  .toast.show { transform:translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+
+<div class="phone">
+  <div class="phone-notch"></div>
+  <div class="phone-screen">
+    <div class="status-bar">
+      <span>9:41</span>
+      <span>📶 🔋 92%</span>
+    </div>
+
+    <div class="driver-header">
+      <div class="driver-greeting">Buenos días, motorista 👋</div>
+      <div class="driver-name">Carlos Díaz</div>
+      <div class="online-toggle-row">
+        <div class="online-label">
+          Estado en Línea
+          <small>✓ Estás recibiendo pedidos</small>
+        </div>
+        <button class="big-toggle" id="onlineToggle" onclick="toggleOnline()"></button>
+      </div>
+    </div>
+
+    <div class="today-stats">
+      <div class="today-stat">
+        <div class="today-stat-val green">RD$<br>1,840</div>
+        <div class="today-stat-label">Hoy</div>
+      </div>
+      <div class="today-stat">
+        <div class="today-stat-val blue">7</div>
+        <div class="today-stat-label">Entregas</div>
+      </div>
+      <div class="today-stat">
+        <div class="today-stat-val yellow">4.9★</div>
+        <div class="today-stat-label">Calificación</div>
+      </div>
+    </div>
+
+    <div class="earnings-pill">
+      <div>
+        <div class="ep-label">Total semanal</div>
+        <div class="ep-val">RD$8,200</div>
+      </div>
+      <div class="ep-icon">💸</div>
+    </div>
+
+    <div class="section-label">Entrega Activa</div>
+    <div class="active-delivery">
+      <div class="delivery-order-id">PEDIDO #TL-2849</div>
+
+      <div style="display:flex;align-items:center;margin-bottom:16px;">
+        <div class="step">
+          <div class="step-dot done">✓</div>
+          <div class="step-label">Aceptado</div>
+        </div>
+        <div class="step-connector done"></div>
+        <div class="step">
+          <div class="step-dot done">✓</div>
+          <div class="step-label">En Tienda</div>
+        </div>
+        <div class="step-connector done"></div>
+        <div class="step">
+          <div class="step-dot current">🛵</div>
+          <div class="step-label">En Camino</div>
+        </div>
+        <div class="step-connector"></div>
+        <div class="step">
+          <div class="step-dot pending">📦</div>
+          <div class="step-label">Entregado</div>
+        </div>
+      </div>
+
+      <div class="delivery-route">
+        <div class="route-point">
+          <div class="route-dot pickup"></div>
+          <div>
+            <div class="route-text-label">Recogida (completada)</div>
+            <div class="route-text-addr">TechZone · C/ del Sol #42, Santiago</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:0;margin-left:4px;">
+          <div class="route-line"></div>
+        </div>
+        <div class="route-point">
+          <div class="route-dot dropoff"></div>
+          <div>
+            <div class="route-text-label">Entregar a</div>
+            <div class="route-text-addr">Ana Jiménez · Av. Estrelleta #18, apto 3B</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:12px;font-size:13px;color:var(--text2);margin-bottom:14px;">
+        <span>📍 1.2 km de distancia</span>
+        <span>⏱ ~6 min</span>
+        <span>💰 RD$160 propina</span>
+      </div>
+
+      <div class="delivery-actions">
+        <button class="del-btn secondary" onclick="showToast('📞 Llamando a Ana...')">📞 Llamar</button>
+        <button class="del-btn secondary" onclick="showToast('Abriendo navegación...')">🗺 Navegar</button>
+        <button class="del-btn primary" onclick="markDelivered()">Marcar Entregado ✓</button>
+      </div>
+    </div>
+
+    <div class="map-placeholder">
+      <div class="map-grid"></div>
+      <div class="map-pin">📍</div>
+      <div class="map-label">Mapa en vivo — 1.2 km al destino</div>
+    </div>
+
+    <div class="section-label">Pedidos Disponibles</div>
+    <div class="order-queue">
+
+      <div class="queue-card">
+        <div class="queue-top">
+          <div class="queue-id">#TL-2852</div>
+          <div class="queue-pay">RD$220</div>
+        </div>
+        <div class="queue-route">📦 Moda Clara → C/ Las Flores #7, Los Jardines</div>
+        <div class="queue-meta">
+          <span>📍 2.4 km</span>
+          <span>⏱ ~12 min</span>
+          <span>📦 2 artículos</span>
+        </div>
+        <button class="accept-btn" onclick="acceptOrder(this, 'GY-2852')">Aceptar Pedido ↗</button>
+      </div>
+
+      <div class="queue-card">
+        <div class="queue-top">
+          <div class="queue-id">#TL-2853</div>
+          <div class="queue-pay">RD$180</div>
+        </div>
+        <div class="queue-route">📦 Beauty Hub → Av. Francia #204</div>
+        <div class="queue-meta">
+          <span>📍 1.8 km</span>
+          <span>⏱ ~9 min</span>
+          <span>📦 1 artículo</span>
+        </div>
+        <button class="accept-btn" onclick="acceptOrder(this, 'GY-2853')">Aceptar Pedido ↗</button>
+      </div>
+
+    </div>
+
+    <div style="height:20px;"></div>
+  </div>
+
+  <div class="bottom-nav">
+    <div class="bottom-nav-item active" onclick="setTab(this)">
+      <div class="bottom-nav-icon">🏠</div>
+      <div class="bottom-nav-label">Inicio</div>
+    </div>
+    <div class="bottom-nav-item" onclick="setTab(this)">
+      <div class="bottom-nav-icon">📦</div>
+      <div class="bottom-nav-label">Pedidos</div>
+    </div>
+    <div class="bottom-nav-item" onclick="setTab(this)">
+      <div class="bottom-nav-icon">💰</div>
+      <div class="bottom-nav-label">Ganancias</div>
+    </div>
+    <div class="bottom-nav-item" onclick="setTab(this)">
+      <div class="bottom-nav-icon">👤</div>
+      <div class="bottom-nav-label">Perfil</div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  function toggleOnline() {
+    const t = document.getElementById('onlineToggle');
+    t.classList.toggle('off');
+    showToast(t.classList.contains('off') ? '⏸ Ahora estás desconectado' : '✅ ¡Estás en línea!');
+  }
+  function setTab(el) { document.querySelectorAll('.bottom-nav-item').forEach(i => i.classList.remove('active')); el.classList.add('active'); }
+  function markDelivered() { showToast('🎉 ¡Entrega completada! +RD$160 de propina ganada'); }
+  function acceptOrder(btn, id) {
+    btn.textContent = '✓ ¡Aceptado!';
+    btn.style.background = 'rgba(0,229,160,0.2)';
+    btn.style.color = 'var(--green)';
+    btn.style.border = '1px solid var(--green)';
+    showToast(`Pedido #${id} agregado a tu cola`);
+  }
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg; t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2500);
+  }
+</script>
+</body>
+</html>

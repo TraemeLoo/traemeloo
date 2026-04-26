@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TraemeLoo — Plataforma de Entrega</title>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;700;900&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root { --brand:#FF3C2F; --bg:#080810; --bg2:#0E0E1A; --border:#1E1E30; --text:#EBEBFF; --text2:#6868A0; }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'DM Sans',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:40px 20px; }
+  .logo { font-family:'Unbounded',sans-serif; font-weight:900; font-size:48px; color:var(--brand); margin-bottom:8px; }
+  .logo span { color:var(--text); }
+  .tagline { color:var(--text2); font-size:16px; margin-bottom:60px; text-align:center; }
+  .cards { display:grid; grid-template-columns:repeat(2,1fr); gap:20px; max-width:700px; width:100%; }
+  .card { background:var(--bg2); border:1px solid var(--border); border-radius:20px; padding:32px; cursor:pointer; transition:all .25s; text-decoration:none; color:var(--text); display:flex; flex-direction:column; gap:12px; }
+  .card:hover { border-color:var(--brand); transform:translateY(-4px); box-shadow:0 20px 60px rgba(0,0,0,0.5); }
+  .card-icon { font-size:40px; }
+  .card-title { font-family:'Unbounded',sans-serif; font-size:18px; font-weight:700; }
+  .card-desc { color:var(--text2); font-size:14px; line-height:1.5; }
+  .card-link { color:var(--brand); font-size:13px; font-weight:600; margin-top:auto; }
+  .footer { margin-top:48px; color:var(--text2); font-size:13px; text-align:center; }
+  @media (max-width:500px) { .cards { grid-template-columns:1fr; } .logo { font-size:36px; } }
+</style>
+</head>
+<body>
+  <div class="logo">Traeme<span>Loo</span></div>
+  <div class="tagline">Plataforma de Entrega · Prototipo Completo · 4 Pantallas</div>
+  <div class="cards">
+    <a class="card" href="traemeloo-cliente.html">
+      <div class="card-icon">🛍️</div>
+      <div class="card-title">App del Cliente</div>
+      <div class="card-desc">Explora tiendas, agrega productos al carrito y sigue tus pedidos en tiempo real.</div>
+      <div class="card-link">Abrir App del Cliente →</div>
+    </a>
+    <a class="card" href="traemeloo-vendedor.html">
+      <div class="card-icon">🏪</div>
+      <div class="card-title">Portal del Vendedor</div>
+      <div class="card-desc">Gestiona productos, acepta pedidos, visualiza tus ganancias y comisiones.</div>
+      <div class="card-link">Abrir Portal del Vendedor →</div>
+    </a>
+    <a class="card" href="traemeloo-motorista.html">
+      <div class="card-icon">🛵</div>
+      <div class="card-title">App del Motorista</div>
+      <div class="card-desc">Interfaz móvil para motoristas. Acepta pedidos, navega rutas y marca entregas completadas.</div>
+      <div class="card-link">Abrir App del Motorista →</div>
+    </a>
+    <a class="card" href="traemeloo-admin-es.html">
+      <div class="card-icon">⚙️</div>
+      <div class="card-title">Panel de Administración</div>
+      <div class="card-desc">Control total de la plataforma. Aprueba vendedores, gestiona motoristas, configura comisiones y ve todos los pedidos en vivo.</div>
+      <div class="card-link">Abrir Panel Admin →</div>
+    </a>
+  </div>
+  <div class="footer">TraemeLoo · Plataforma de Entrega · República Dominicana · 2026</div>
+</body>
+</html>

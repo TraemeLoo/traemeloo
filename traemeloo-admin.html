@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TraemeLoo — Panel de Administración</title>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --brand: #FF3C2F; --brand-dark: #C42A1E;
+    --bg: #080810; --bg2: #0E0E1A; --bg3: #141422; --surface: #1C1C2E;
+    --border: #222238; --text: #EBEBFF; --text2: #6868A0; --text3: #3A3A60;
+    --green: #00E5A0; --yellow: #FFD94A; --orange: #FF8C42; --blue: #5B9BFF; --purple: #A066FF;
+    --sidebar-w: 220px; --radius: 14px; --radius-sm: 9px;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'DM Sans',sans-serif; background:var(--bg); color:var(--text); display:flex; min-height:100vh; font-size:14px; }
+
+  .sidebar { width:var(--sidebar-w); flex-shrink:0; background:var(--bg2); border-right:1px solid var(--border); display:flex; flex-direction:column; position:sticky; top:0; height:100vh; overflow-y:auto; }
+  .sidebar-top { padding:20px 16px; border-bottom:1px solid var(--border); }
+  .sidebar-logo { font-family:'Unbounded',sans-serif; font-weight:900; font-size:18px; color:var(--brand); }
+  .sidebar-logo span { color:var(--text); }
+  .admin-badge { display:inline-block; margin-top:6px; background:rgba(160,102,255,0.15); border:1px solid rgba(160,102,255,0.3); color:var(--purple); padding:3px 10px; border-radius:50px; font-size:10px; font-weight:700; letter-spacing:1px; text-transform:uppercase; }
+  .sidebar-nav { flex:1; padding:12px 10px; }
+  .nav-group { font-size:9px; color:var(--text3); text-transform:uppercase; letter-spacing:2px; padding:4px 8px; margin:14px 0 4px; }
+  .nav-item { display:flex; align-items:center; gap:9px; padding:9px 10px; border-radius:var(--radius-sm); cursor:pointer; transition:all .15s; color:var(--text2); margin-bottom:1px; font-size:13px; }
+  .nav-item:hover { background:var(--bg3); color:var(--text); }
+  .nav-item.active { background:rgba(255,60,47,0.1); color:var(--brand); font-weight:500; }
+  .nav-item .icon { font-size:15px; width:18px; text-align:center; flex-shrink:0; }
+  .nav-badge { margin-left:auto; background:var(--brand); color:#fff; font-size:10px; font-weight:700; padding:1px 6px; border-radius:50px; }
+  .nav-badge.yellow { background:var(--yellow); color:#000; }
+  .sidebar-user { padding:12px 10px; border-top:1px solid var(--border); display:flex; align-items:center; gap:10px; }
+  .user-av { width:32px; height:32px; border-radius:50%; background:var(--purple); display:flex; align-items:center; justify-content:center; font-size:15px; }
+  .user-info .user-name { font-size:13px; font-weight:600; }
+  .user-info .user-role { font-size:11px; color:var(--purple); }
+
+  .main { flex:1; display:flex; flex-direction:column; min-width:0; }
+  .topbar { background:var(--bg2); border-bottom:1px solid var(--border); padding:0 28px; height:56px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:50; }
+  .topbar-left { display:flex; align-items:center; gap:12px; }
+  .topbar-title { font-family:'Unbounded',sans-serif; font-size:15px; font-weight:700; }
+  .breadcrumb { color:var(--text2); font-size:13px; }
+  .topbar-right { display:flex; align-items:center; gap:10px; }
+  .tb-btn { background:var(--bg3); border:1px solid var(--border); color:var(--text2); padding:7px 14px; border-radius:50px; cursor:pointer; font-size:12px; font-family:'DM Sans',sans-serif; transition:all .15s; display:flex; align-items:center; gap:6px; }
+  .tb-btn:hover { border-color:var(--brand); color:var(--brand); }
+  .tb-btn.primary { background:var(--brand); color:#fff; border-color:var(--brand); }
+  .tb-btn.primary:hover { background:var(--brand-dark); }
+  .alert-bell { position:relative; }
+  .alert-dot { position:absolute; top:-2px; right:-2px; width:8px; height:8px; border-radius:50%; background:var(--brand); }
+
+  .content { padding:24px; flex:1; }
+
+  .kpi-grid { display:grid; grid-template-columns:repeat(5,1fr); gap:14px; margin-bottom:24px; }
+  .kpi { background:var(--bg2); border:1px solid var(--border); border-radius:var(--radius); padding:18px 16px; transition:border-color .2s; cursor:default; position:relative; }
+  .kpi:hover { border-color:var(--brand); }
+  .kpi-icon { font-size:20px; margin-bottom:10px; }
+  .kpi-val { font-family:'Unbounded',sans-serif; font-size:22px; font-weight:700; margin-bottom:3px; }
+  .kpi-val.green{color:var(--green);} .kpi-val.red{color:var(--brand);} .kpi-val.blue{color:var(--blue);} .kpi-val.yellow{color:var(--yellow);} .kpi-val.purple{color:var(--purple);}
+  .kpi-label { font-size:12px; color:var(--text2); }
+  .kpi-trend { font-size:11px; margin-top:6px; color:var(--green); }
+  .kpi-trend.neg { color:var(--brand); }
+
+  .tabs { display:flex; gap:4px; margin-bottom:20px; background:var(--bg2); border:1px solid var(--border); border-radius:50px; padding:4px; width:fit-content; }
+  .tab { padding:7px 18px; border-radius:50px; cursor:pointer; font-size:13px; color:var(--text2); transition:all .15s; }
+  .tab.active { background:var(--brand); color:#fff; font-weight:600; }
+
+  .table-container { background:var(--bg2); border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; margin-bottom:20px; }
+  .table-header { padding:16px 20px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; }
+  .table-title { font-family:'Unbounded',sans-serif; font-size:13px; font-weight:700; }
+  .table-search { display:flex; align-items:center; gap:8px; background:var(--bg3); border:1px solid var(--border); border-radius:50px; padding:6px 14px; }
+  .table-search input { background:none; border:none; outline:none; color:var(--text); font-size:13px; width:160px; font-family:'DM Sans',sans-serif; }
+  .table-search input::placeholder { color:var(--text3); }
+  table { width:100%; border-collapse:collapse; }
+  thead tr { border-bottom:1px solid var(--border); }
+  th { padding:10px 20px; text-align:left; font-size:11px; color:var(--text2); text-transform:uppercase; letter-spacing:1px; font-weight:600; }
+  td { padding:12px 20px; border-bottom:1px solid var(--border); }
+  tr:last-child td { border-bottom:none; }
+  tr:hover td { background:var(--bg3); }
+  .td-name { font-weight:500; }
+  .td-sub { font-size:12px; color:var(--text2); margin-top:2px; }
+  .status-pill { display:inline-flex; align-items:center; gap:5px; padding:3px 10px; border-radius:50px; font-size:11px; font-weight:700; }
+  .pill-active { background:rgba(0,229,160,0.12); color:var(--green); }
+  .pill-pending { background:rgba(255,217,74,0.12); color:var(--yellow); }
+  .pill-suspended { background:rgba(255,60,47,0.12); color:var(--brand); }
+  .pill-online { background:rgba(0,229,160,0.12); color:var(--green); }
+  .pill-offline { background:rgba(104,104,160,0.12); color:var(--text2); }
+  .pill-review { background:rgba(91,155,255,0.12); color:var(--blue); }
+  .pill-dot { width:5px; height:5px; border-radius:50%; background:currentColor; }
+  .action-group { display:flex; gap:6px; }
+  .act-btn { padding:4px 10px; border-radius:6px; font-size:11px; cursor:pointer; border:1px solid var(--border); background:var(--bg3); color:var(--text2); font-family:'DM Sans',sans-serif; transition:all .15s; }
+  .act-btn:hover { border-color:var(--blue); color:var(--blue); }
+  .act-btn.approve:hover { border-color:var(--green); color:var(--green); }
+  .act-btn.suspend:hover { border-color:var(--brand); color:var(--brand); }
+  .rating-stars { color:var(--yellow); font-size:12px; }
+
+  .bottom-grid { display:grid; grid-template-columns:1.2fr 1fr; gap:18px; }
+  .live-order-row { padding:12px 20px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:12px; }
+  .live-order-row:last-child { border-bottom:none; }
+  .lo-id { font-family:'Unbounded',sans-serif; font-size:11px; color:var(--brand); font-weight:700; flex-shrink:0; width:80px; }
+  .lo-info { flex:1; }
+  .lo-name { font-size:13px; font-weight:500; }
+  .lo-meta { font-size:11px; color:var(--text2); margin-top:2px; }
+  .lo-amount { font-weight:700; font-size:14px; color:var(--green); flex-shrink:0; }
+  .lo-status { flex-shrink:0; }
+
+  .zone-viz { padding:20px; display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .zone-block { background:var(--bg3); border:1px solid var(--border); border-radius:var(--radius-sm); padding:14px; cursor:pointer; transition:all .2s; }
+  .zone-block:hover { border-color:var(--brand); }
+  .zone-name { font-size:13px; font-weight:600; margin-bottom:6px; }
+  .zone-drivers { font-size:12px; color:var(--text2); margin-bottom:8px; }
+  .zone-bar-outer { background:var(--border); height:4px; border-radius:2px; }
+  .zone-bar-inner { height:100%; border-radius:2px; background:var(--green); }
+
+  .toast { position:fixed; bottom:24px; right:24px; background:var(--green); color:#000; padding:12px 20px; border-radius:var(--radius-sm); font-weight:700; font-size:13px; transform:translateY(60px); opacity:0; transition:all .3s; z-index:999; pointer-events:none; }
+  .toast.show { transform:translateY(0); opacity:1; }
+
+  .config-row { display:flex; align-items:center; justify-content:space-between; padding:12px 20px; border-bottom:1px solid var(--border); }
+  .config-row:last-child { border-bottom:none; }
+  .config-label { font-size:13px; }
+  .config-sub { font-size:11px; color:var(--text2); margin-top:2px; }
+  .config-val { font-weight:700; font-size:15px; color:var(--green); }
+  .config-input { background:var(--bg3); border:1.5px solid var(--border); color:var(--text); padding:6px 10px; border-radius:var(--radius-sm); font-family:'DM Sans',sans-serif; font-size:14px; font-weight:700; width:80px; text-align:right; outline:none; transition:border-color .2s; }
+  .config-input:focus { border-color:var(--brand); }
+
+  @media (max-width:1100px) { .kpi-grid { grid-template-columns:repeat(3,1fr); } }
+  @media (max-width:900px) { .sidebar { display:none; } .bottom-grid { grid-template-columns:1fr; } }
+  @media (max-width:700px) { .kpi-grid { grid-template-columns:repeat(2,1fr); } }
+</style>
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="sidebar-top">
+    <div class="sidebar-logo">Traeme<span>Loo</span></div>
+    <div class="admin-badge">Panel Admin</div>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-group">General</div>
+    <div class="nav-item active" onclick="setNav(this)"><span class="icon">📊</span>Panel Principal</div>
+    <div class="nav-item" onclick="setNav(this)"><span class="icon">📦</span>Todos los Pedidos <span class="nav-badge">18</span></div>
+    <div class="nav-item" onclick="setNav(this)"><span class="icon">🗺</span>Mapa en Vivo</div>
+    <div class="nav-group">Usuarios</div>
+    <div class="nav-item" onclick="setNav(this)"><span class="icon">🏪</span>Vendedores <span class="nav-badge yellow">3</span></div>
+    <div class="nav-item" onclick="setNav(this)"><span class="icon">🛵</span>Motoristas</div>
+    <div class="nav-item" onclick="setNav(this)"><span class="icon">👥</span>Clientes</div>
+    <div class="nav-group">Finanzas</div>
+    <div class="nav-item" onclick="setNav(this)"><span class="icon">💰</span>Ingresos</div>
+    <div class="nav-item" onclick="setNav(this)"><span class="icon">🏦</span>Pagos</div>
+    <div class="nav-item" onclick="setNav(this)"><span class="icon">🧾</span>Configurar Comisiones</div>
+    <div class="nav-group">Configuración</div>
+    <div class="nav-item" onclick="setNav(this)"><span class="icon">🌍</span>Zonas de Entrega</div>
+    <div class="nav-item" onclick="setNav(this)"><span class="icon">📢</span>Promociones</div>
+    <div class="nav-item" onclick="setNav(this)"><span class="icon">⚙️</span>Config. del Sistema</div>
+  </nav>
+  <div class="sidebar-user">
+    <div class="user-av">👑</div>
+    <div class="user-info">
+      <div class="user-name">Super Admin</div>
+      <div class="user-role">Dueño de Plataforma</div>
+    </div>
+  </div>
+</aside>
+
+<main class="main">
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="topbar-title">Centro de Control</div>
+      <div class="breadcrumb">/ Panel Principal</div>
+    </div>
+    <div class="topbar-right">
+      <div class="tb-btn alert-bell" onclick="showToast('3 nuevas solicitudes de vendedores pendientes')">
+        🔔 Alertas <div class="alert-dot"></div>
+      </div>
+      <div class="tb-btn" onclick="showToast('Generando reporte completo...')">📤 Exportar</div>
+      <div class="tb-btn primary" onclick="showToast('Panel de acciones rápidas abierto')">⚡ Acciones Rápidas</div>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <div class="kpi-grid">
+      <div class="kpi">
+        <div class="kpi-icon">💰</div>
+        <div class="kpi-val green">RD$1.2M</div>
+        <div class="kpi-label">Ingresos Totales (Mes)</div>
+        <div class="kpi-trend">↑ 31% vs mes anterior</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-icon">📦</div>
+        <div class="kpi-val red">847</div>
+        <div class="kpi-label">Pedidos este Mes</div>
+        <div class="kpi-trend">↑ 18% de crecimiento</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-icon">🏪</div>
+        <div class="kpi-val blue">42</div>
+        <div class="kpi-label">Vendedores Activos</div>
+        <div class="kpi-trend">+3 nuevos esta semana</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-icon">🛵</div>
+        <div class="kpi-val yellow">18</div>
+        <div class="kpi-label">Motoristas en Línea</div>
+        <div class="kpi-trend neg">↓ 2 vs ayer</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-icon">⭐</div>
+        <div class="kpi-val purple">4.82</div>
+        <div class="kpi-label">Calificación Plataforma</div>
+        <div class="kpi-trend">↑ 0.04 esta semana</div>
+      </div>
+    </div>
+
+    <div class="tabs">
+      <div class="tab active" onclick="switchTab(this)">Vendedores</div>
+      <div class="tab" onclick="switchTab(this)">Motoristas</div>
+      <div class="tab" onclick="switchTab(this)">Clientes</div>
+    </div>
+
+    <div id="sellersTab">
+      <div class="table-container">
+        <div class="table-header">
+          <div class="table-title">Gestión de Vendedores</div>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <div class="table-search">
+              <span style="color:var(--text3);">🔍</span>
+              <input type="text" placeholder="Buscar vendedores...">
+            </div>
+            <div class="tb-btn primary" onclick="showToast('Modal de invitación de vendedor')">+ Invitar Vendedor</div>
+          </div>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Tienda</th>
+              <th>Dueño</th>
+              <th>Categoría</th>
+              <th>Estado</th>
+              <th>Pedidos</th>
+              <th>Ingresos</th>
+              <th>Calificación</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><div class="td-name">📱 TechZone Santiago</div><div class="td-sub">Ingresó en Ene 2026</div></td>
+              <td>José Martínez</td>
+              <td>Electrónica</td>
+              <td><span class="status-pill pill-active"><span class="pill-dot"></span>Activo</span></td>
+              <td>312</td>
+              <td style="color:var(--green);font-weight:700;">RD$486,000</td>
+              <td><span class="rating-stars">★★★★★</span> 4.9</td>
+              <td><div class="action-group">
+                <button class="act-btn" onclick="showToast('Viendo perfil de TechZone')">Ver</button>
+                <button class="act-btn suspend" onclick="showToast('Tienda suspendida')">Suspender</button>
+              </div></td>
+            </tr>
+            <tr>
+              <td><div class="td-name">👗 Moda Clara</div><div class="td-sub">Ingresó en Feb 2026</div></td>
+              <td>Clara Rodríguez</td>
+              <td>Moda</td>
+              <td><span class="status-pill pill-active"><span class="pill-dot"></span>Activo</span></td>
+              <td>188</td>
+              <td style="color:var(--green);font-weight:700;">RD$240,000</td>
+              <td><span class="rating-stars">★★★★</span> 4.7</td>
+              <td><div class="action-group">
+                <button class="act-btn" onclick="showToast('Viendo perfil de Moda Clara')">Ver</button>
+                <button class="act-btn suspend" onclick="showToast('Tienda suspendida')">Suspender</button>
+              </div></td>
+            </tr>
+            <tr>
+              <td><div class="td-name">🧸 Juguetería Kids</div><div class="td-sub">Ingresó en Mar 2026</div></td>
+              <td>Pedro Santos</td>
+              <td>Niños y Juguetes</td>
+              <td><span class="status-pill pill-pending"><span class="pill-dot"></span>Revisión Pendiente</span></td>
+              <td>—</td>
+              <td style="color:var(--text2);">—</td>
+              <td style="color:var(--text2);">—</td>
+              <td><div class="action-group">
+                <button class="act-btn approve" onclick="approveShop(this)">✓ Aprobar</button>
+                <button class="act-btn suspend" onclick="showToast('Solicitud rechazada')">✕ Rechazar</button>
+              </div></td>
+            </tr>
+            <tr>
+              <td><div class="td-name">🏠 Casa & Deco</div><div class="td-sub">Ingresó en Ene 2026</div></td>
+              <td>Maria Fernández</td>
+              <td>Hogar y Decoración</td>
+              <td><span class="status-pill pill-active"><span class="pill-dot"></span>Activo</span></td>
+              <td>94</td>
+              <td style="color:var(--green);font-weight:700;">RD$162,000</td>
+              <td><span class="rating-stars">★★★★★</span> 4.8</td>
+              <td><div class="action-group">
+                <button class="act-btn" onclick="showToast('Viendo perfil de Casa & Deco')">Ver</button>
+                <button class="act-btn suspend" onclick="showToast('Tienda suspendida')">Suspender</button>
+              </div></td>
+            </tr>
+            <tr>
+              <td><div class="td-name">💄 Beauty Hub</div><div class="td-sub">Ingresó en Feb 2026</div></td>
+              <td>Luisa Gómez</td>
+              <td>Belleza</td>
+              <td><span class="status-pill pill-review"><span class="pill-dot"></span>Bajo Revisión</span></td>
+              <td>45</td>
+              <td style="color:var(--green);font-weight:700;">RD$58,500</td>
+              <td><span class="rating-stars">★★★★★</span> 4.9</td>
+              <td><div class="action-group">
+                <button class="act-btn" onclick="showToast('Viendo caso de Beauty Hub')">Ver Caso</button>
+                <button class="act-btn approve" onclick="showToast('Revisión limpiada')">Limpiar</button>
+              </div></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="bottom-grid">
+
+      <div class="table-container">
+        <div class="table-header">
+          <div class="table-title">🔴 Pedidos en Vivo</div>
+          <div style="font-size:12px;color:var(--green);">18 activos ahora</div>
+        </div>
+        <div>
+          <div class="live-order-row">
+            <div class="lo-id">#TL-2851</div>
+            <div class="lo-info">
+              <div class="lo-name">María González → TechZone</div>
+              <div class="lo-meta">Motorista: Carlos D. · 3 artículos · Sección · ETA 8 min</div>
+            </div>
+            <div class="lo-amount">RD$3,500</div>
+            <div class="lo-status"><span class="status-pill pill-active"><span class="pill-dot"></span>En Camino</span></div>
+          </div>
+          <div class="live-order-row">
+            <div class="lo-id">#TL-2850</div>
+            <div class="lo-info">
+              <div class="lo-name">Carlos Méndez → Moda Clara</div>
+              <div class="lo-meta">Motorista: Ana M. · 1 artículo · Los Jardines · ETA 15 min</div>
+            </div>
+            <div class="lo-amount">RD$1,800</div>
+            <div class="lo-status"><span class="status-pill pill-pending"><span class="pill-dot"></span>Preparando</span></div>
+          </div>
+          <div class="live-order-row">
+            <div class="lo-id">#TL-2849</div>
+            <div class="lo-info">
+              <div class="lo-name">Ana Jiménez → TechZone</div>
+              <div class="lo-meta">Motorista: Roberto V. · 2 artículos · Centro · ETA 5 min</div>
+            </div>
+            <div class="lo-amount">RD$900</div>
+            <div class="lo-status"><span class="status-pill pill-active"><span class="pill-dot"></span>En Camino</span></div>
+          </div>
+          <div class="live-order-row">
+            <div class="lo-id">#TL-2848</div>
+            <div class="lo-info">
+              <div class="lo-name">Luis Rosario → Casa & Deco</div>
+              <div class="lo-meta">Sin asignar · Esperando motorista · 4 artículos</div>
+            </div>
+            <div class="lo-amount">RD$6,200</div>
+            <div class="lo-status"><span class="status-pill pill-review"><span class="pill-dot"></span>Sin Motorista</span></div>
+          </div>
+          <div class="live-order-row">
+            <div class="lo-id">#TL-2847</div>
+            <div class="lo-info">
+              <div class="lo-name">Roberto Pérez → Beauty Hub</div>
+              <div class="lo-meta">Motorista: Miguel R. · Recién entregado ✓</div>
+            </div>
+            <div class="lo-amount">RD$1,200</div>
+            <div class="lo-status"><span class="status-pill pill-active"><span class="pill-dot"></span>Completado</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:18px;">
+
+        <div class="table-container">
+          <div class="table-header">
+            <div class="table-title">Zonas de Entrega</div>
+            <button class="act-btn" onclick="showToast('Editor de zonas abierto')">Editar Zonas</button>
+          </div>
+          <div class="zone-viz">
+            <div class="zone-block">
+              <div class="zone-name">Centro Santiago</div>
+              <div class="zone-drivers">🛵 8 motoristas activos</div>
+              <div class="zone-bar-outer"><div class="zone-bar-inner" style="width:90%"></div></div>
+            </div>
+            <div class="zone-block">
+              <div class="zone-name">Los Jardines</div>
+              <div class="zone-drivers">🛵 4 motoristas activos</div>
+              <div class="zone-bar-outer"><div class="zone-bar-inner" style="width:60%"></div></div>
+            </div>
+            <div class="zone-block">
+              <div class="zone-name">La Trinitaria</div>
+              <div class="zone-drivers">🛵 3 motoristas activos</div>
+              <div class="zone-bar-outer"><div class="zone-bar-inner" style="width:45%"></div></div>
+            </div>
+            <div class="zone-block" style="border-style:dashed;cursor:pointer;" onclick="showToast('Agregar zona próximamente')">
+              <div class="zone-name" style="color:var(--text3)">+ Agregar Zona</div>
+              <div class="zone-drivers" style="color:var(--text3)">Clic para configurar</div>
+              <div class="zone-bar-outer"><div class="zone-bar-inner" style="width:0%"></div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="table-container">
+          <div class="table-header">
+            <div class="table-title">Comisiones y Tarifas</div>
+            <button class="act-btn approve" onclick="showToast('✅ ¡Configuración guardada!')">Guardar</button>
+          </div>
+          <div>
+            <div class="config-row">
+              <div>
+                <div class="config-label">Comisión al Vendedor</div>
+                <div class="config-sub">% descontado de cada venta</div>
+              </div>
+              <input class="config-input" type="text" value="15%">
+            </div>
+            <div class="config-row">
+              <div>
+                <div class="config-label">Tarifa de Envío Base</div>
+                <div class="config-sub">Cobrada al cliente</div>
+              </div>
+              <input class="config-input" type="text" value="RD$80">
+            </div>
+            <div class="config-row">
+              <div>
+                <div class="config-label">Pago al Motorista</div>
+                <div class="config-sub">Por entrega completada</div>
+              </div>
+              <input class="config-input" type="text" value="RD$120">
+            </div>
+            <div class="config-row">
+              <div>
+                <div class="config-label">Envío Gratis desde</div>
+                <div class="config-sub">Pedidos sobre este monto</div>
+              </div>
+              <input class="config-input" type="text" value="RD$3k">
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  function setNav(el) { document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active')); el.classList.add('active'); }
+  function switchTab(el) { document.querySelectorAll('.tab').forEach(t => t.classList.remove('active')); el.classList.add('active'); }
+  function approveShop(btn) {
+    const pill = btn.closest('tr').querySelector('.status-pill');
+    pill.className = 'status-pill pill-active';
+    pill.innerHTML = '<span class="pill-dot"></span>Activo';
+    btn.parentElement.innerHTML = '<button class="act-btn" onclick="showToast(\'Viendo tienda\')">Ver</button><button class="act-btn suspend" onclick="showToast(\'Tienda suspendida\')">Suspender</button>';
+    showToast('✅ ¡Tienda aprobada y activada!');
+  }
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg; t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2800);
+  }
+</script>
+</body>
+</html>

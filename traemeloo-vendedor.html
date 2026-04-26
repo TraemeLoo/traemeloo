@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TraemeLoo — Portal del Vendedor</title>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;700;900&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --brand: #FF3C2F; --brand-dark: #C42A1E; --brand-light: #FF6B61;
+    --bg: #0D0F12; --bg2: #151719; --bg3: #1C1E22; --surface: #232629;
+    --border: #2A2D32; --text: #F0F0EB; --text2: #8A8F9A; --text3: #4A4F5A;
+    --green: #1DDB8B; --yellow: #FFD94A; --orange: #FF8C42; --blue: #4A9EFF;
+    --sidebar-w: 240px; --radius: 14px; --radius-sm: 9px;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'DM Sans',sans-serif; background:var(--bg); color:var(--text); display:flex; min-height:100vh; }
+
+  .sidebar { width:var(--sidebar-w); flex-shrink:0; background:var(--bg2); border-right:1px solid var(--border); display:flex; flex-direction:column; position:sticky; top:0; height:100vh; overflow-y:auto; }
+  .sidebar-logo { padding:24px 20px; border-bottom:1px solid var(--border); font-family:'Unbounded',sans-serif; font-weight:900; font-size:18px; color:var(--brand); }
+  .sidebar-logo span { color:var(--text); }
+  .sidebar-logo small { display:block; font-size:10px; color:var(--text3); font-family:'DM Sans',sans-serif; font-weight:400; margin-top:2px; letter-spacing:1px; text-transform:uppercase; }
+  .sidebar-nav { flex:1; padding:16px 12px; }
+  .nav-group-label { font-size:10px; color:var(--text3); text-transform:uppercase; letter-spacing:1.5px; padding:0 8px; margin:16px 0 6px; }
+  .nav-item { display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:var(--radius-sm); cursor:pointer; transition:all .15s; font-size:14px; color:var(--text2); margin-bottom:2px; }
+  .nav-item:hover { background:var(--bg3); color:var(--text); }
+  .nav-item.active { background:rgba(255,60,47,0.12); color:var(--brand); font-weight:500; }
+  .nav-item .icon { font-size:17px; width:20px; text-align:center; }
+  .nav-item .badge { margin-left:auto; background:var(--brand); color:#fff; font-size:11px; font-weight:700; padding:2px 7px; border-radius:50px; }
+  .sidebar-footer { padding:16px 12px; border-top:1px solid var(--border); }
+  .shop-profile { display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:var(--radius-sm); background:var(--bg3); cursor:pointer; transition:background .15s; }
+  .shop-profile:hover { background:var(--surface); }
+  .shop-avatar { font-size:28px; }
+  .shop-profile-info { flex:1; }
+  .shop-profile-name { font-size:13px; font-weight:600; }
+  .shop-profile-status { font-size:11px; color:var(--green); display:flex; align-items:center; gap:4px; }
+  .status-dot { width:6px; height:6px; border-radius:50%; background:var(--green); }
+
+  .main { flex:1; display:flex; flex-direction:column; min-width:0; }
+  .topbar { background:var(--bg2); border-bottom:1px solid var(--border); padding:0 28px; height:60px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:50; }
+  .topbar-title { font-family:'Unbounded',sans-serif; font-size:16px; font-weight:700; }
+  .topbar-actions { display:flex; align-items:center; gap:12px; }
+  .topbar-btn { background:var(--brand); color:#fff; border:none; cursor:pointer; font-family:'DM Sans',sans-serif; font-weight:600; font-size:13px; padding:8px 18px; border-radius:50px; transition:background .2s; display:flex; align-items:center; gap:6px; }
+  .topbar-btn:hover { background:var(--brand-dark); }
+  .topbar-btn.secondary { background:var(--bg3); color:var(--text); border:1.5px solid var(--border); }
+  .topbar-btn.secondary:hover { border-color:var(--brand); color:var(--brand); }
+
+  .content { padding:28px; flex:1; }
+
+  .stats-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:28px; }
+  .stat-card { background:var(--bg2); border:1px solid var(--border); border-radius:var(--radius); padding:20px; position:relative; overflow:hidden; transition:border-color .2s; }
+  .stat-card:hover { border-color:var(--brand); }
+  .stat-card::before { content:''; position:absolute; top:0; right:0; width:80px; height:80px; border-radius:50%; transform:translate(30%,-30%); }
+  .stat-card.green::before { background:rgba(29,219,139,0.08); }
+  .stat-card.red::before { background:rgba(255,60,47,0.08); }
+  .stat-card.yellow::before { background:rgba(255,217,74,0.08); }
+  .stat-card.blue::before { background:rgba(74,158,255,0.08); }
+  .stat-icon { font-size:24px; margin-bottom:12px; }
+  .stat-val { font-family:'Unbounded',sans-serif; font-size:26px; font-weight:700; margin-bottom:4px; }
+  .stat-val.green { color:var(--green); } .stat-val.red { color:var(--brand); } .stat-val.yellow { color:var(--yellow); } .stat-val.blue { color:var(--blue); }
+  .stat-label { font-size:13px; color:var(--text2); }
+  .stat-change { font-size:12px; margin-top:6px; color:var(--green); }
+  .stat-change.neg { color:var(--brand); }
+
+  .main-grid { display:grid; grid-template-columns:1.4fr 1fr; gap:20px; }
+  .panel { background:var(--bg2); border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; }
+  .panel-header { padding:18px 20px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; }
+  .panel-title { font-family:'Unbounded',sans-serif; font-size:14px; font-weight:700; }
+  .order-filters { display:flex; gap:6px; }
+  .filter-btn { background:none; border:1px solid var(--border); color:var(--text2); padding:4px 12px; border-radius:50px; font-size:12px; cursor:pointer; transition:all .15s; font-family:'DM Sans',sans-serif; }
+  .filter-btn.active { background:var(--brand); border-color:var(--brand); color:#fff; }
+
+  .order-row { padding:14px 20px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:14px; transition:background .15s; cursor:pointer; }
+  .order-row:last-child { border-bottom:none; }
+  .order-row:hover { background:var(--bg3); }
+  .order-id { font-family:'Unbounded',sans-serif; font-size:12px; color:var(--brand); font-weight:700; flex-shrink:0; }
+  .order-customer { flex:1; }
+  .order-name { font-size:14px; font-weight:500; }
+  .order-items-count { font-size:12px; color:var(--text2); margin-top:2px; }
+  .order-total { font-weight:700; font-size:15px; flex-shrink:0; }
+  .order-status { padding:4px 12px; border-radius:50px; font-size:11px; font-weight:700; flex-shrink:0; }
+  .status-new { background:rgba(255,217,74,0.15); color:var(--yellow); }
+  .status-preparing { background:rgba(74,158,255,0.15); color:var(--blue); }
+  .status-ready { background:rgba(255,140,66,0.15); color:var(--orange); }
+  .status-delivered { background:rgba(29,219,139,0.15); color:var(--green); }
+  .order-actions { display:flex; gap:6px; }
+  .action-btn { background:var(--bg3); border:1px solid var(--border); color:var(--text); padding:5px 10px; border-radius:6px; font-size:12px; cursor:pointer; transition:all .15s; font-family:'DM Sans',sans-serif; }
+  .action-btn:hover { background:var(--green); border-color:var(--green); color:#000; }
+  .action-btn.danger:hover { background:var(--brand); border-color:var(--brand); color:#fff; }
+
+  .right-col { display:flex; flex-direction:column; gap:20px; }
+  .product-row { padding:12px 20px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:12px; cursor:pointer; transition:background .15s; }
+  .product-row:last-child { border-bottom:none; }
+  .product-row:hover { background:var(--bg3); }
+  .product-row-img { width:40px; height:40px; border-radius:8px; background:var(--bg3); display:flex; align-items:center; justify-content:center; font-size:22px; flex-shrink:0; }
+  .product-row-info { flex:1; }
+  .product-row-name { font-size:13px; font-weight:500; }
+  .product-row-stock { font-size:12px; color:var(--text2); margin-top:2px; }
+  .stock-low { color:var(--brand) !important; }
+  .product-row-price { font-weight:700; font-size:14px; color:var(--green); }
+  .stock-toggle { width:36px; height:20px; border-radius:10px; background:var(--green); cursor:pointer; position:relative; transition:background .2s; border:none; flex-shrink:0; }
+  .stock-toggle::after { content:''; position:absolute; width:14px; height:14px; background:#fff; border-radius:50%; top:3px; right:4px; transition:right .2s; }
+  .stock-toggle.off { background:var(--surface); }
+  .stock-toggle.off::after { right:18px; }
+
+  .chart-area { padding:20px; display:flex; flex-direction:column; gap:12px; }
+  .mini-chart { display:flex; align-items:flex-end; gap:4px; height:60px; }
+  .bar { flex:1; border-radius:4px 4px 0 0; background:var(--brand); opacity:0.6; transition:opacity .2s; cursor:pointer; }
+  .bar:hover { opacity:1; }
+  .bar.today { opacity:1; }
+  .chart-labels { display:flex; gap:4px; }
+  .chart-label { flex:1; text-align:center; font-size:10px; color:var(--text3); }
+  .revenue-num { font-family:'Unbounded',sans-serif; font-size:24px; font-weight:700; color:var(--green); }
+
+  .toast { position:fixed; bottom:24px; right:24px; background:var(--green); color:#000; padding:14px 20px; border-radius:var(--radius-sm); font-weight:600; font-size:14px; transform:translateY(80px); opacity:0; transition:all .3s; z-index:999; pointer-events:none; }
+  .toast.show { transform:translateY(0); opacity:1; }
+
+  .modal-bg { position:fixed; inset:0; background:rgba(0,0,0,0.7); z-index:500; display:none; align-items:center; justify-content:center; }
+  .modal-bg.open { display:flex; }
+  .modal-box { background:var(--bg2); border:1px solid var(--border); border-radius:var(--radius); padding:28px; width:480px; max-width:95vw; }
+  .modal-box h3 { font-family:'Unbounded',sans-serif; font-size:18px; margin-bottom:20px; }
+  .form-group { margin-bottom:16px; }
+  .form-group label { display:block; font-size:13px; color:var(--text2); margin-bottom:6px; }
+  .form-group input, .form-group select, .form-group textarea { width:100%; background:var(--bg3); border:1.5px solid var(--border); color:var(--text); border-radius:var(--radius-sm); padding:10px 14px; font-family:'DM Sans',sans-serif; font-size:14px; outline:none; transition:border-color .2s; }
+  .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color:var(--brand); }
+  .form-group textarea { resize:vertical; min-height:80px; }
+  .form-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .modal-actions { display:flex; gap:10px; margin-top:20px; justify-content:flex-end; }
+  .btn-cancel { background:var(--bg3); border:1.5px solid var(--border); color:var(--text2); padding:10px 20px; border-radius:var(--radius-sm); cursor:pointer; font-family:'DM Sans',sans-serif; font-size:14px; transition:all .2s; }
+  .btn-cancel:hover { border-color:var(--text2); color:var(--text); }
+  .btn-save { background:var(--brand); color:#fff; border:none; padding:10px 24px; border-radius:var(--radius-sm); cursor:pointer; font-family:'DM Sans',sans-serif; font-weight:600; font-size:14px; transition:background .2s; }
+  .btn-save:hover { background:var(--brand-dark); }
+
+  @media (max-width:900px) { .stats-grid { grid-template-columns:repeat(2,1fr); } .main-grid { grid-template-columns:1fr; } .sidebar { display:none; } }
+</style>
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    Traeme<span>Loo</span>
+    <small>Portal del Vendedor</small>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-group-label">Principal</div>
+    <div class="nav-item active" onclick="setNav(this)"><span class="icon">📊</span>Panel Principal</div>
+    <div class="nav-item" onclick="setNav(this)"><span class="icon">📦</span>Pedidos<span class="badge">5</span></div>
+    <div class="nav-item" onclick="setNav(this)"><span class="icon">🏷️</span>Productos</div>
+    <div class="nav-group-label">Finanzas</div>
+    <div class="nav-item" onclick="setNav(this)"><span class="icon">💰</span>Ganancias</div>
+    <div class="nav-item" onclick="setNav(this)"><span class="icon">🏦</span>Pagos</div>
+    <div class="nav-group-label">Configuración</div>
+    <div class="nav-item" onclick="setNav(this)"><span class="icon">🏪</span>Perfil de Tienda</div>
+    <div class="nav-item" onclick="setNav(this)"><span class="icon">🕐</span>Horarios y Zonas</div>
+    <div class="nav-item" onclick="setNav(this)"><span class="icon">🔔</span>Notificaciones</div>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="shop-profile">
+      <div class="shop-avatar">📱</div>
+      <div class="shop-profile-info">
+        <div class="shop-profile-name">TechZone Santiago</div>
+        <div class="shop-profile-status"><div class="status-dot"></div>Abierto para pedidos</div>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<main class="main">
+  <div class="topbar">
+    <div class="topbar-title">Panel Principal</div>
+    <div class="topbar-actions">
+      <button class="topbar-btn secondary">📤 Exportar Reporte</button>
+      <button class="topbar-btn" onclick="openProductModal()">+ Agregar Producto</button>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <div class="stats-grid">
+      <div class="stat-card green">
+        <div class="stat-icon">💰</div>
+        <div class="stat-val green">RD$48,200</div>
+        <div class="stat-label">Ventas de Hoy</div>
+        <div class="stat-change">↑ 14% vs ayer</div>
+      </div>
+      <div class="stat-card red">
+        <div class="stat-icon">📦</div>
+        <div class="stat-val red">23</div>
+        <div class="stat-label">Pedidos Hoy</div>
+        <div class="stat-change">↑ 8% vs ayer</div>
+      </div>
+      <div class="stat-card yellow">
+        <div class="stat-icon">⏳</div>
+        <div class="stat-val yellow">5</div>
+        <div class="stat-label">Pedidos Pendientes</div>
+        <div class="stat-change neg">Requiere atención</div>
+      </div>
+      <div class="stat-card blue">
+        <div class="stat-icon">⭐</div>
+        <div class="stat-val blue">4.9</div>
+        <div class="stat-label">Calificación</div>
+        <div class="stat-change">↑ 0.1 esta semana</div>
+      </div>
+    </div>
+
+    <div class="main-grid">
+
+      <div>
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title">Pedidos en Vivo</div>
+            <div class="order-filters">
+              <button class="filter-btn active" onclick="filterOrders(this)">Todos</button>
+              <button class="filter-btn" onclick="filterOrders(this)">Nuevos</button>
+              <button class="filter-btn" onclick="filterOrders(this)">Preparando</button>
+              <button class="filter-btn" onclick="filterOrders(this)">Listos</button>
+            </div>
+          </div>
+          <div class="order-list">
+
+            <div class="order-row">
+              <div class="order-id">#TL-2851</div>
+              <div class="order-customer">
+                <div class="order-name">María González</div>
+                <div class="order-items-count">3 artículos · Funda iPhone, Cable USB, Audífonos</div>
+              </div>
+              <div class="order-total">RD$3,500</div>
+              <div class="order-status status-new">Nuevo</div>
+              <div class="order-actions">
+                <button class="action-btn" onclick="acceptOrder(this)">Aceptar</button>
+                <button class="action-btn danger" onclick="showToast('Pedido rechazado')">✕</button>
+              </div>
+            </div>
+
+            <div class="order-row">
+              <div class="order-id">#TL-2850</div>
+              <div class="order-customer">
+                <div class="order-name">Carlos Méndez</div>
+                <div class="order-items-count">1 artículo · Batería Portátil 20000mAh</div>
+              </div>
+              <div class="order-total">RD$1,800</div>
+              <div class="order-status status-preparing">Preparando</div>
+              <div class="order-actions">
+                <button class="action-btn" onclick="readyOrder(this)" style="background:rgba(255,140,66,0.15);border-color:var(--orange);color:var(--orange)">Listo</button>
+              </div>
+            </div>
+
+            <div class="order-row">
+              <div class="order-id">#TL-2849</div>
+              <div class="order-customer">
+                <div class="order-name">Ana Jiménez</div>
+                <div class="order-items-count">2 artículos · Protector de Pantalla x2</div>
+              </div>
+              <div class="order-total">RD$900</div>
+              <div class="order-status status-ready">Listo</div>
+              <div class="order-actions">
+                <button class="action-btn" onclick="showToast('¡Motorista notificado para recoger!')" style="background:rgba(255,140,66,0.15);border-color:var(--orange);color:var(--orange)">Notificar Motorista</button>
+              </div>
+            </div>
+
+            <div class="order-row">
+              <div class="order-id">#TL-2848</div>
+              <div class="order-customer">
+                <div class="order-name">Luis Rosario</div>
+                <div class="order-items-count">4 artículos · Varios accesorios</div>
+              </div>
+              <div class="order-total">RD$6,200</div>
+              <div class="order-status status-new">Nuevo</div>
+              <div class="order-actions">
+                <button class="action-btn" onclick="acceptOrder(this)">Aceptar</button>
+                <button class="action-btn danger" onclick="showToast('Pedido rechazado')">✕</button>
+              </div>
+            </div>
+
+            <div class="order-row">
+              <div class="order-id">#TL-2847</div>
+              <div class="order-customer">
+                <div class="order-name">Roberto Pérez</div>
+                <div class="order-items-count">1 artículo · Cargador Inalámbrico</div>
+              </div>
+              <div class="order-total">RD$1,200</div>
+              <div class="order-status status-delivered">Entregado ✓</div>
+              <div class="order-actions">
+                <button class="action-btn" onclick="showToast('¡Recibo enviado!')">Recibo</button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <div class="panel" style="margin-top:20px;">
+          <div class="panel-header">
+            <div class="panel-title">Ventas Semanales</div>
+            <div style="font-size:13px;color:var(--text2)">Esta semana</div>
+          </div>
+          <div class="chart-area">
+            <div class="revenue-num">RD$248,500</div>
+            <div style="font-size:13px;color:var(--green);margin-top:-4px;">↑ 22% vs semana pasada</div>
+            <div class="mini-chart">
+              <div class="bar" style="height:40%"></div>
+              <div class="bar" style="height:65%"></div>
+              <div class="bar" style="height:50%"></div>
+              <div class="bar" style="height:80%"></div>
+              <div class="bar" style="height:55%"></div>
+              <div class="bar" style="height:90%"></div>
+              <div class="bar today" style="height:75%"></div>
+            </div>
+            <div class="chart-labels">
+              <div class="chart-label">Lun</div>
+              <div class="chart-label">Mar</div>
+              <div class="chart-label">Mié</div>
+              <div class="chart-label">Jue</div>
+              <div class="chart-label">Vie</div>
+              <div class="chart-label">Sáb</div>
+              <div class="chart-label">Dom</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="right-col">
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title">Productos</div>
+            <button class="action-btn" onclick="openProductModal()">+ Agregar</button>
+          </div>
+          <div>
+            <div class="product-row">
+              <div class="product-row-img">📱</div>
+              <div class="product-row-info">
+                <div class="product-row-name">Funda iPhone 15</div>
+                <div class="product-row-stock">Existencia: 48 unidades</div>
+              </div>
+              <div class="product-row-price">RD$850</div>
+              <button class="stock-toggle" onclick="toggleStock(this)"></button>
+            </div>
+            <div class="product-row">
+              <div class="product-row-img">🔌</div>
+              <div class="product-row-info">
+                <div class="product-row-name">Cable USB-C 2m</div>
+                <div class="product-row-stock">Existencia: 120 unidades</div>
+              </div>
+              <div class="product-row-price">RD$450</div>
+              <button class="stock-toggle" onclick="toggleStock(this)"></button>
+            </div>
+            <div class="product-row">
+              <div class="product-row-img">🎧</div>
+              <div class="product-row-info">
+                <div class="product-row-name">Audífonos Inalámbricos Pro</div>
+                <div class="product-row-stock stock-low">Existencia: 2 unidades ⚠️</div>
+              </div>
+              <div class="product-row-price">RD$2,200</div>
+              <button class="stock-toggle" onclick="toggleStock(this)"></button>
+            </div>
+            <div class="product-row">
+              <div class="product-row-img">🔋</div>
+              <div class="product-row-info">
+                <div class="product-row-name">Batería Portátil 20000mAh</div>
+                <div class="product-row-stock">Existencia: 35 unidades</div>
+              </div>
+              <div class="product-row-price">RD$1,800</div>
+              <button class="stock-toggle" onclick="toggleStock(this)"></button>
+            </div>
+            <div class="product-row">
+              <div class="product-row-img">⚡</div>
+              <div class="product-row-info">
+                <div class="product-row-name">Base de Carga Inalámbrica</div>
+                <div class="product-row-stock">Existencia: 0 — Agotado</div>
+              </div>
+              <div class="product-row-price">RD$1,200</div>
+              <button class="stock-toggle off" onclick="toggleStock(this)"></button>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title">Resumen de Cuenta</div>
+          </div>
+          <div style="padding:20px; display:flex; flex-direction:column; gap:12px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <span style="font-size:14px;color:var(--text2);">Pago pendiente</span>
+              <span style="font-weight:700;color:var(--green);font-size:16px;">RD$12,450</span>
+            </div>
+            <div style="height:1px;background:var(--border);"></div>
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <span style="font-size:14px;color:var(--text2);">Comisión (15%)</span>
+              <span style="font-weight:600;color:var(--brand);">- RD$3,600</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <span style="font-size:14px;color:var(--text2);">Último pago</span>
+              <span style="font-weight:600;font-size:14px;">RD$38,200</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <span style="font-size:14px;color:var(--text2);">Próximo pago</span>
+              <span style="font-weight:600;font-size:14px;color:var(--yellow);">20 Mar, 2026</span>
+            </div>
+            <button class="topbar-btn" style="margin-top:8px;justify-content:center;" onclick="showToast('¡Pago anticipado solicitado!')">Solicitar Pago Anticipado</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- MODAL AGREGAR PRODUCTO -->
+<div class="modal-bg" id="productModal">
+  <div class="modal-box">
+    <h3>+ Agregar Nuevo Producto</h3>
+    <div class="form-group">
+      <label>Nombre del Producto</label>
+      <input type="text" placeholder="ej. Funda iPhone 15">
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Precio (RD$)</label>
+        <input type="number" placeholder="850">
+      </div>
+      <div class="form-group">
+        <label>Cantidad en Existencia</label>
+        <input type="number" placeholder="50">
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Categoría</label>
+      <select>
+        <option>Electrónica</option>
+        <option>Moda</option>
+        <option>Hogar y Decoración</option>
+        <option>Belleza</option>
+        <option>Deportes</option>
+        <option>Niños y Juguetes</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Descripción</label>
+      <textarea placeholder="Breve descripción del producto..."></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">Cancelar</button>
+      <button class="btn-save" onclick="saveProduct()">Guardar Producto</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  function setNav(el) { document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active')); el.classList.add('active'); }
+  function filterOrders(el) { document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active')); el.classList.add('active'); }
+  function acceptOrder(btn) {
+    const statusEl = btn.closest('.order-row').querySelector('.order-status');
+    statusEl.className = 'order-status status-preparing';
+    statusEl.textContent = 'Preparando';
+    btn.parentElement.innerHTML = '<button class="action-btn" onclick="readyOrder(this)" style="background:rgba(255,140,66,0.15);border-color:var(--orange);color:var(--orange)">Listo</button>';
+    showToast('¡Pedido aceptado! Empieza a preparar.');
+  }
+  function readyOrder(btn) {
+    const statusEl = btn.closest('.order-row').querySelector('.order-status');
+    statusEl.className = 'order-status status-ready';
+    statusEl.textContent = 'Listo';
+    btn.parentElement.innerHTML = '<button class="action-btn" onclick="showToast(\'¡Motorista notificado!\')" style="background:rgba(255,140,66,0.15);border-color:var(--orange);color:var(--orange)">Notificar Motorista</button>';
+    showToast('¡Pedido marcado como listo! Notificando al motorista.');
+  }
+  function toggleStock(btn) {
+    btn.classList.toggle('off');
+    showToast(btn.classList.contains('off') ? 'Producto oculto de la tienda' : 'Producto visible en la tienda');
+  }
+  function openProductModal() { document.getElementById('productModal').classList.add('open'); }
+  function closeModal() { document.getElementById('productModal').classList.remove('open'); }
+  function saveProduct() { closeModal(); showToast('✅ ¡Producto agregado exitosamente!'); }
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg; t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2800);
+  }
+</script>
+</body>
+</html>
