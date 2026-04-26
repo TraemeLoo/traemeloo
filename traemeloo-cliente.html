@@ -178,7 +178,7 @@
     <div class="nav-location" onclick="alert('Configura tu dirección de entrega')">
       📍 <span>Santiago</span>
     </div>
-    <button class="nav-btn" id="authBtn" onclick="handleAuthBtn()">Iniciar Sesión</button>
+    <button class="nav-btn">Iniciar Sesión</button>
     <button class="cart-btn" onclick="toggleCart()">
       🛒 Carrito
       <div class="cart-badge" id="cartBadge">3</div>
@@ -367,49 +367,12 @@
     <h3>🛒 Tu Carrito</h3>
     <button class="close-btn" onclick="toggleCart()">×</button>
   </div>
-  <div class="cart-items">
-    <div class="cart-item">
-      <div class="cart-item-img">📱</div>
-      <div class="cart-item-info">
-        <div class="cart-item-name">Funda iPhone 15</div>
-        <div class="cart-item-price">RD$850</div>
-      </div>
-      <div class="cart-qty">
-        <button class="qty-btn" onclick="changeQty(this,-1)">−</button>
-        <span class="qty-num">1</span>
-        <button class="qty-btn" onclick="changeQty(this,1)">+</button>
-      </div>
-    </div>
-    <div class="cart-item">
-      <div class="cart-item-img">🔌</div>
-      <div class="cart-item-info">
-        <div class="cart-item-name">Cable USB-C 2m</div>
-        <div class="cart-item-price">RD$450</div>
-      </div>
-      <div class="cart-qty">
-        <button class="qty-btn" onclick="changeQty(this,-1)">−</button>
-        <span class="qty-num">2</span>
-        <button class="qty-btn" onclick="changeQty(this,1)">+</button>
-      </div>
-    </div>
-    <div class="cart-item">
-      <div class="cart-item-img">🎧</div>
-      <div class="cart-item-info">
-        <div class="cart-item-name">Audífonos Inalámbricos</div>
-        <div class="cart-item-price">RD$2,200</div>
-      </div>
-      <div class="cart-qty">
-        <button class="qty-btn" onclick="changeQty(this,-1)">−</button>
-        <span class="qty-num">1</span>
-        <button class="qty-btn" onclick="changeQty(this,1)">+</button>
-      </div>
-    </div>
-  </div>
+  <div class="cart-items" id="cartItemsContainer"></div>
   <div class="cart-footer">
-    <div class="cart-total"><span>Subtotal</span><span>RD$3,950</span></div>
-    <div class="cart-total"><span>Envío</span><span>RD$80</span></div>
-    <div class="cart-total grand"><span>Total</span><span>RD$4,030</span></div>
-    <button class="checkout-btn" onclick="alert('¡Pago próximamente! Se necesita integración con pasarela de pago.')">Proceder al Pago →</button>
+    <div class="cart-total"><span>Subtotal</span><span id="cartSubtotal">RD$0</span></div>
+    <div class="cart-total"><span>Envío</span><span id="cartDelivery">RD$80</span></div>
+    <div class="cart-total grand"><span>Total</span><span id="cartTotal">RD$80</span></div>
+    <button class="checkout-btn" id="checkoutBtn" onclick="handleCheckout()">Proceder al Pago →</button>
   </div>
 </div>
 
@@ -430,36 +393,7 @@
       </div>
       <div class="products-section">
         <h4>Productos</h4>
-        <div class="products-grid">
-          <div class="product-card">
-            <div class="product-img">📱</div>
-            <div class="product-info">
-              <div class="product-name">Funda para Celular</div>
-              <div class="product-bottom"><span class="product-price">RD$850</span><button class="add-btn" onclick="addToCart()">+</button></div>
-            </div>
-          </div>
-          <div class="product-card">
-            <div class="product-img">🔌</div>
-            <div class="product-info">
-              <div class="product-name">Cable USB-C</div>
-              <div class="product-bottom"><span class="product-price">RD$450</span><button class="add-btn" onclick="addToCart()">+</button></div>
-            </div>
-          </div>
-          <div class="product-card">
-            <div class="product-img">🎧</div>
-            <div class="product-info">
-              <div class="product-name">Audífonos Pro</div>
-              <div class="product-bottom"><span class="product-price">RD$2,200</span><button class="add-btn" onclick="addToCart()">+</button></div>
-            </div>
-          </div>
-          <div class="product-card">
-            <div class="product-img">🔋</div>
-            <div class="product-info">
-              <div class="product-name">Batería Portátil</div>
-              <div class="product-bottom"><span class="product-price">RD$1,800</span><button class="add-btn" onclick="addToCart()">+</button></div>
-            </div>
-          </div>
-        </div>
+        <div class="products-grid" id="productsGrid">
       </div>
     </div>
   </div>
@@ -472,63 +406,375 @@
 </div>
 
 <script>
+
+  const API = 'https://traemeloo-production.up.railway.app/api';
+  const token = localStorage.getItem('tl_token');
+  const tlUser = JSON.parse(localStorage.getItem('tl_user') || 'null');
+
+  // ================================
+  // AUTH BUTTON
+  // ================================
+  const authBtn = document.getElementById('authBtn');
+  if (tlUser) {
+    authBtn.textContent = '👤 ' + tlUser.name.split(' ')[0];
+  }
+  function handleAuthBtn() {
+    if (tlUser) { localStorage.clear(); window.location.reload(); }
+    else { window.location.href = 'traemeloo-auth.html'; }
+  }
+
+  // ================================
+  // CART STATE
+  // ================================
+  let cart = JSON.parse(localStorage.getItem('tl_cart') || '[]');
+  let currentShopId = null;
+  let currentShopName = null;
+
+  function saveCart() { localStorage.setItem('tl_cart', JSON.stringify(cart)); }
+
+  function updateCartBadge() {
+    const total = cart.reduce((sum, i) => sum + i.quantity, 0);
+    const badge = document.getElementById('cartBadge');
+    badge.textContent = total;
+    badge.style.transform = 'scale(1.4)';
+    setTimeout(() => badge.style.transform = 'scale(1)', 200);
+  }
+
+  function renderCart() {
+    const container = document.getElementById('cartItemsContainer');
+    if (cart.length === 0) {
+      container.innerHTML = '<div style="text-align:center;color:var(--text3);padding:40px 0;">Tu carrito está vacío</div>';
+      document.getElementById('cartSubtotal').textContent = 'RD$0';
+      document.getElementById('cartTotal').textContent = 'RD$80';
+      return;
+    }
+    const subtotal = cart.reduce((sum, i) => sum + (i.price * i.quantity), 0);
+    const delivery = subtotal >= 3000 ? 0 : 80;
+    const total = subtotal + delivery;
+
+    container.innerHTML = cart.map((item, idx) => `
+      <div class="cart-item">
+        <div class="cart-item-img">${item.emoji || '📦'}</div>
+        <div class="cart-item-info">
+          <div class="cart-item-name">${item.name}</div>
+          <div class="cart-item-price">RD$${item.price.toLocaleString()}</div>
+        </div>
+        <div class="cart-qty">
+          <button class="qty-btn" onclick="changeCartQty(${idx}, -1)">−</button>
+          <span class="qty-num">${item.quantity}</span>
+          <button class="qty-btn" onclick="changeCartQty(${idx}, 1)">+</button>
+        </div>
+      </div>
+    `).join('');
+
+    document.getElementById('cartSubtotal').textContent = `RD$${subtotal.toLocaleString()}`;
+    document.getElementById('cartDelivery').textContent = delivery === 0 ? '¡Gratis!' : `RD$${delivery}`;
+    document.getElementById('cartTotal').textContent = `RD$${total.toLocaleString()}`;
+  }
+
+  function changeCartQty(idx, delta) {
+    cart[idx].quantity += delta;
+    if (cart[idx].quantity <= 0) cart.splice(idx, 1);
+    saveCart();
+    updateCartBadge();
+    renderCart();
+  }
+
+  // ================================
+  // TOGGLE CART
+  // ================================
   function toggleCart() {
     document.getElementById('cartOverlay').classList.toggle('open');
     document.getElementById('cartSidebar').classList.toggle('open');
+    renderCart();
   }
-  function changeQty(btn, delta) {
-    const numEl = btn.parentElement.querySelector('.qty-num');
-    let n = parseInt(numEl.textContent) + delta;
-    if(n < 1) n = 1;
-    numEl.textContent = n;
+
+  // ================================
+  // ADD TO CART
+  // ================================
+  function addToCart(productId, name, price, emoji, shopId, shopName) {
+    // If cart has items from different shop, warn
+    if (cart.length > 0 && currentShopId && currentShopId !== shopId) {
+      if (!confirm(`Tu carrito tiene productos de ${currentShopName}. ¿Quieres vaciarlo y agregar de ${shopName}?`)) return;
+      cart = [];
+    }
+    currentShopId = shopId;
+    currentShopName = shopName;
+
+    const existing = cart.find(i => i.productId === productId);
+    if (existing) { existing.quantity++; }
+    else { cart.push({ productId, name, price, emoji, quantity: 1, shopId }); }
+
+    saveCart();
+    updateCartBadge();
+
+    // Flash feedback
+    const badge = document.getElementById('cartBadge');
+    badge.style.background = 'var(--green)';
+    setTimeout(() => badge.style.background = 'var(--brand)', 400);
   }
-  function filterCategory(el, cat) {
-    document.querySelectorAll('.cat-chip').forEach(c => c.classList.remove('active'));
-    el.classList.add('active');
+
+  // ================================
+  // LOAD SHOPS FROM API
+  // ================================
+  async function loadShops(category) {
+    const grid = document.getElementById('shopsGrid');
+    grid.innerHTML = '<div style="color:var(--text3);padding:20px;">Cargando tiendas...</div>';
+    try {
+      let url = `${API}/shops`;
+      if (category && category !== 'all') url += `?category=${encodeURIComponent(category)}`;
+      const res = await fetch(url);
+      const shops = await res.json();
+      if (!shops.length) {
+        grid.innerHTML = '<div style="color:var(--text3);padding:20px;">No hay tiendas disponibles en esta categoría.</div>';
+        return;
+      }
+      grid.innerHTML = shops.map(shop => `
+        <div class="shop-card" onclick="openShop('${shop.id}', '${shop.name}', '🏪', ${shop.rating || 0}, '20-35 min', 'RD$80')">
+          <div class="shop-img">${getCategoryEmoji(shop.category)}</div>
+          <div class="shop-badge">${shop.isOpen ? 'Abierto' : 'Cerrado'}</div>
+          <button class="shop-fav" onclick="toggleFav(event, this)">♡</button>
+          <div class="shop-info">
+            <div class="shop-name">${shop.name}</div>
+            <div class="shop-meta">
+              <span><span class="shop-rating">★</span> ${shop.rating ? shop.rating.toFixed(1) : 'Nuevo'}</span>
+              <span>🕐 20-35 min</span>
+              <span>🛵 RD$80</span>
+            </div>
+            <div class="shop-tags"><div class="tag">${shop.category}</div></div>
+          </div>
+        </div>
+      `).join('');
+    } catch(e) {
+      // Fallback to static shops if API fails
+      grid.innerHTML = `<div style="color:var(--text3);padding:20px;">No se pudo cargar las tiendas.</div>`;
+    }
   }
-  function openShop(name, emoji, rating, time, delivery) {
+
+  function getCategoryEmoji(cat) {
+    const map = { 'Electrónica':'📱','Moda':'👗','Hogar':'🏠','Belleza':'💄','Deportes':'⚽','Niños':'🧸' };
+    return map[cat] || '🏪';
+  }
+
+  // ================================
+  // OPEN SHOP MODAL
+  // ================================
+  async function openShop(shopId, name, emoji, rating, time, delivery) {
     document.getElementById('modalName').textContent = name;
     document.getElementById('modalEmoji').textContent = emoji;
-    document.getElementById('modalRating').textContent = rating;
+    document.getElementById('modalRating').textContent = rating ? rating.toFixed(1) : 'Nuevo';
     document.getElementById('modalTime').textContent = time;
     document.getElementById('modalDelivery').textContent = delivery;
     document.getElementById('modalOverlay').classList.add('open');
     document.getElementById('shopModal').classList.add('open');
+    document.getElementById('productsGrid').innerHTML = '<div style="color:var(--text3);text-align:center;padding:20px;">Cargando productos...</div>';
+
+    try {
+      const res = await fetch(`${API}/shops/${shopId}`);
+      const shop = await res.json();
+      currentShopId = shopId;
+      currentShopName = name;
+
+      if (!shop.products || !shop.products.length) {
+        document.getElementById('productsGrid').innerHTML = '<div style="color:var(--text3);">Esta tienda no tiene productos disponibles.</div>';
+        return;
+      }
+
+      document.getElementById('productsGrid').innerHTML = shop.products.map(p => `
+        <div class="product-card">
+          <div class="product-img">${getCategoryEmoji(p.category)}</div>
+          <div class="product-info">
+            <div class="product-name">${p.name}</div>
+            ${p.description ? `<div style="font-size:11px;color:var(--text2);margin-bottom:4px;">${p.description}</div>` : ''}
+            <div class="product-bottom">
+              <span class="product-price">RD$${p.price.toLocaleString()}</span>
+              ${p.status === 'ACTIVE' && p.stock > 0
+                ? `<button class="add-btn" onclick="addToCart('${p.id}','${p.name}',${p.price},'📦','${shopId}','${name}')">+</button>`
+                : `<span style="font-size:10px;color:var(--text3);">Agotado</span>`
+              }
+            </div>
+          </div>
+        </div>
+      `).join('');
+    } catch(e) {
+      document.getElementById('productsGrid').innerHTML = '<div style="color:var(--text3);">Error cargando productos.</div>';
+    }
   }
+
   function closeModal(e) {
     if(e.target === document.getElementById('modalOverlay')) {
       document.getElementById('modalOverlay').classList.remove('open');
       document.getElementById('shopModal').classList.remove('open');
     }
   }
+
+  // ================================
+  // CATEGORY FILTER
+  // ================================
+  function filterCategory(el, cat) {
+    document.querySelectorAll('.cat-chip').forEach(c => c.classList.remove('active'));
+    el.classList.add('active');
+    loadShops(cat);
+  }
+
   function toggleFav(e, btn) {
     e.stopPropagation();
     btn.classList.toggle('active');
     btn.textContent = btn.classList.contains('active') ? '♥' : '♡';
   }
-  function addToCart() {
-    const badge = document.getElementById('cartBadge');
-    badge.textContent = parseInt(badge.textContent) + 1;
-    badge.style.transform = 'scale(1.4)';
-    setTimeout(() => badge.style.transform = 'scale(1)', 200);
+
+  // ================================
+  // CHECKOUT WITH STRIPE
+  // ================================
+  async function handleCheckout() {
+    if (!token) {
+      window.location.href = 'traemeloo-auth.html';
+      return;
+    }
+    if (cart.length === 0) return;
+
+    const btn = document.getElementById('checkoutBtn');
+    btn.textContent = 'Procesando...';
+    btn.disabled = true;
+
+    try {
+      // 1. Create order
+      const subtotal = cart.reduce((sum, i) => sum + (i.price * i.quantity), 0);
+      const deliveryFee = subtotal >= 3000 ? 0 : 80;
+
+      const orderRes = await fetch(`${API}/orders`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({
+          shopId: currentShopId,
+          items: cart.map(i => ({ productId: i.productId, quantity: i.quantity })),
+          deliveryAddress: tlUser?.defaultAddress || 'Dirección del cliente',
+          deliveryLat: 19.4517,
+          deliveryLng: -70.6970,
+          paymentMethod: 'CARD',
+        }),
+      });
+
+      const order = await orderRes.json();
+      if (!orderRes.ok) throw new Error(order.error || 'Error creando pedido');
+
+      // 2. Create Stripe payment intent
+      const intentRes = await fetch(`${API}/payments/create-intent`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({ orderId: order.id }),
+      });
+      const { clientSecret, paymentIntentId } = await intentRes.json();
+
+      // 3. Show Stripe checkout
+      showStripeModal(clientSecret, paymentIntentId, order.id, order.orderNumber);
+
+    } catch(err) {
+      alert('Error: ' + err.message);
+      btn.textContent = 'Proceder al Pago →';
+      btn.disabled = false;
+    }
   }
-  setTimeout(() => {
-    document.getElementById('trackingBar').classList.add('visible');
-  }, 3000);
-// Check login state
-const tlUser = JSON.parse(localStorage.getItem('tl_user') || 'null');
-const authBtn = document.getElementById('authBtn');
-if (tlUser) {
-  authBtn.textContent = '👤 ' + tlUser.name.split(' ')[0];
-}
-function handleAuthBtn() {
-  if (tlUser) {
-    localStorage.clear();
-    window.location.reload();
-  } else {
-    window.location.href = 'traemeloo-auth.html';
+
+  // ================================
+  // STRIPE MODAL
+  // ================================
+  let stripe, cardElement;
+
+  async function showStripeModal(clientSecret, paymentIntentId, orderId, orderNumber) {
+    // Load Stripe.js if not loaded
+    if (!window.Stripe) {
+      const script = document.createElement('script');
+      script.src = 'https://js.stripe.com/v3/';
+      document.head.appendChild(script);
+      await new Promise(r => script.onload = r);
+    }
+
+    // Get publishable key from backend
+    const keyRes = await fetch(`${API}/payments/publishable-key`);
+    const { publishableKey } = await keyRes.json();
+    stripe = Stripe(publishableKey);
+
+    // Create modal
+    const modal = document.createElement('div');
+    modal.id = 'stripeModal';
+    modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px;';
+    modal.innerHTML = `
+      <div style="background:#141414;border:1px solid #2E2E2E;border-radius:16px;padding:32px;width:100%;max-width:420px;">
+        <h3 style="font-family:Unbounded,sans-serif;font-size:18px;margin-bottom:4px;">Pagar Pedido</h3>
+        <p style="color:#A0A0A0;font-size:13px;margin-bottom:24px;">Pedido ${orderNumber}</p>
+        <div id="card-element" style="background:#1E1E1E;border:1.5px solid #2E2E2E;border-radius:10px;padding:14px;margin-bottom:16px;"></div>
+        <div id="card-errors" style="color:#FF6B61;font-size:13px;margin-bottom:12px;"></div>
+        <button id="payBtn" style="width:100%;background:#FF3C2F;color:#fff;border:none;padding:14px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;font-family:DM Sans,sans-serif;">
+          Pagar RD$${cart.reduce((s,i)=>s+(i.price*i.quantity),0)+80}
+        </button>
+        <button onclick="document.getElementById('stripeModal').remove();document.getElementById('checkoutBtn').textContent='Proceder al Pago →';document.getElementById('checkoutBtn').disabled=false;"
+          style="width:100%;background:none;border:none;color:#5A5A5A;padding:10px;cursor:pointer;margin-top:8px;font-size:13px;">
+          Cancelar
+        </button>
+      </div>
+    `;
+    document.body.appendChild(modal);
+
+    const elements = stripe.elements();
+    cardElement = elements.create('card', {
+      style: { base: { color: '#F5F5F0', fontFamily: 'DM Sans, sans-serif', fontSize: '15px', '::placeholder': { color: '#5A5A5A' } } }
+    });
+    cardElement.mount('#card-element');
+
+    document.getElementById('payBtn').addEventListener('click', async () => {
+      const payBtn = document.getElementById('payBtn');
+      payBtn.textContent = 'Procesando...';
+      payBtn.disabled = true;
+
+      const { error, paymentIntent } = await stripe.confirmCardPayment(clientSecret, {
+        payment_method: { card: cardElement }
+      });
+
+      if (error) {
+        document.getElementById('card-errors').textContent = error.message;
+        payBtn.textContent = 'Intentar de nuevo';
+        payBtn.disabled = false;
+        return;
+      }
+
+      // Confirm with backend
+      await fetch(`${API}/payments/confirm`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({ paymentIntentId: paymentIntent.id, orderId }),
+      });
+
+      // Clear cart
+      cart = [];
+      currentShopId = null;
+      saveCart();
+      updateCartBadge();
+
+      modal.innerHTML = `
+        <div style="background:#141414;border:1px solid #2E2E2E;border-radius:16px;padding:40px;width:100%;max-width:420px;text-align:center;">
+          <div style="font-size:56px;margin-bottom:16px;">🎉</div>
+          <h3 style="font-family:Unbounded,sans-serif;font-size:20px;margin-bottom:8px;">¡Pedido Confirmado!</h3>
+          <p style="color:#A0A0A0;font-size:14px;margin-bottom:8px;">Pedido <strong style="color:#1DDB8B;">${orderNumber}</strong></p>
+          <p style="color:#A0A0A0;font-size:13px;margin-bottom:24px;">El vendedor ha sido notificado y comenzará a preparar tu pedido.</p>
+          <button onclick="document.getElementById('stripeModal').remove();" style="background:#FF3C2F;color:#fff;border:none;padding:12px 28px;border-radius:50px;font-size:14px;font-weight:600;cursor:pointer;">
+            Continuar Comprando
+          </button>
+        </div>
+      `;
+
+      // Show tracking bar
+      document.getElementById('trackingBar').textContent = `Pedido ${orderNumber} — ¡Confirmado! Seguir →`;
+      document.getElementById('trackingBar').classList.add('visible');
+    });
   }
-}
+
+  // ================================
+  // INIT
+  // ================================
+  loadShops();
+  updateCartBadge();
+  renderCart();
 </script>
 </body>
 </html>
