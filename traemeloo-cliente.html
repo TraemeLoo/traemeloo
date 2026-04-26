@@ -178,7 +178,7 @@
     <div class="nav-location" onclick="alert('Configura tu dirección de entrega')">
       📍 <span>Santiago</span>
     </div>
-    <button class="nav-btn">Iniciar Sesión</button>
+    <button class="nav-btn" id="authBtn" onclick="handleAuthBtn()">Iniciar Sesión</button>
     <button class="cart-btn" onclick="toggleCart()">
       🛒 Carrito
       <div class="cart-badge" id="cartBadge">3</div>
@@ -515,6 +515,20 @@
   setTimeout(() => {
     document.getElementById('trackingBar').classList.add('visible');
   }, 3000);
+// Check login state
+const tlUser = JSON.parse(localStorage.getItem('tl_user') || 'null');
+const authBtn = document.getElementById('authBtn');
+if (tlUser) {
+  authBtn.textContent = '👤 ' + tlUser.name.split(' ')[0];
+}
+function handleAuthBtn() {
+  if (tlUser) {
+    localStorage.clear();
+    window.location.reload();
+  } else {
+    window.location.href = 'traemeloo-auth.html';
+  }
+}
 </script>
 </body>
 </html>
