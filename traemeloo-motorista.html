@@ -123,11 +123,11 @@
 
     <div class="driver-header">
       <div class="driver-greeting">Buenos días, motorista 👋</div>
-      <div class="driver-name">Carlos Díaz</div>
+      <div class="driver-name" id="driverName">Motorista</div>
       <div class="online-toggle-row">
         <div class="online-label">
           Estado en Línea
-          <small>✓ Estás recibiendo pedidos</small>
+          <small id="onlineStatusLabel">⏸ No estás recibiendo pedidos</small>
         </div>
         <button class="big-toggle" id="onlineToggle" onclick="toggleOnline()"></button>
       </div>
@@ -135,15 +135,15 @@
 
     <div class="today-stats">
       <div class="today-stat">
-        <div class="today-stat-val green">RD$<br>1,840</div>
+        <div class="today-stat-val green" id="statToday">RD$<br>0</div>
         <div class="today-stat-label">Hoy</div>
       </div>
       <div class="today-stat">
-        <div class="today-stat-val blue">7</div>
+        <div class="today-stat-val blue" id="statDeliveries">0</div>
         <div class="today-stat-label">Entregas</div>
       </div>
       <div class="today-stat">
-        <div class="today-stat-val yellow">4.9★</div>
+        <div class="today-stat-val yellow" id="statRating">-★</div>
         <div class="today-stat-label">Calificación</div>
       </div>
     </div>
@@ -151,128 +151,60 @@
     <div class="earnings-pill">
       <div>
         <div class="ep-label">Total semanal</div>
-        <div class="ep-val">RD$8,200</div>
+        <div class="ep-val" id="weekEarnings">RD$0</div>
       </div>
       <div class="ep-icon">💸</div>
     </div>
 
-    <div class="section-label">Entrega Activa</div>
-    <div class="active-delivery">
-      <div class="delivery-order-id">PEDIDO #TL-2849</div>
-
-      <div style="display:flex;align-items:center;margin-bottom:16px;">
-        <div class="step">
-          <div class="step-dot done">✓</div>
-          <div class="step-label">Aceptado</div>
-        </div>
-        <div class="step-connector done"></div>
-        <div class="step">
-          <div class="step-dot done">✓</div>
-          <div class="step-label">En Tienda</div>
-        </div>
-        <div class="step-connector done"></div>
-        <div class="step">
-          <div class="step-dot current">🛵</div>
-          <div class="step-label">En Camino</div>
-        </div>
-        <div class="step-connector"></div>
-        <div class="step">
-          <div class="step-dot pending">📦</div>
-          <div class="step-label">Entregado</div>
-        </div>
-      </div>
-
-      <div class="delivery-route">
-        <div class="route-point">
-          <div class="route-dot pickup"></div>
-          <div>
-            <div class="route-text-label">Recogida (completada)</div>
-            <div class="route-text-addr">TechZone · C/ del Sol #42, Santiago</div>
-          </div>
-        </div>
-        <div style="display:flex;gap:0;margin-left:4px;">
-          <div class="route-line"></div>
-        </div>
-        <div class="route-point">
-          <div class="route-dot dropoff"></div>
-          <div>
-            <div class="route-text-label">Entregar a</div>
-            <div class="route-text-addr">Ana Jiménez · Av. Estrelleta #18, apto 3B</div>
-          </div>
-        </div>
-      </div>
-
-      <div style="display:flex;gap:12px;font-size:13px;color:var(--text2);margin-bottom:14px;">
-        <span>📍 1.2 km de distancia</span>
-        <span>⏱ ~6 min</span>
-        <span>💰 RD$160 propina</span>
-      </div>
-
-      <div class="delivery-actions">
-        <button class="del-btn secondary" onclick="showToast('📞 Llamando a Ana...')">📞 Llamar</button>
-        <button class="del-btn secondary" onclick="showToast('Abriendo navegación...')">🗺 Navegar</button>
-        <button class="del-btn primary" onclick="markDelivered()">Marcar Entregado ✓</button>
+    <!-- ACTIVE DELIVERY -->
+    <div id="activeDeliverySection" style="display:none;">
+      <div class="section-label">Entrega Activa</div>
+      <div class="active-delivery" id="activeDeliveryCard"></div>
+      <div class="map-placeholder">
+        <div class="map-grid"></div>
+        <div class="map-pin">📍</div>
+        <div class="map-label" id="mapLabel">Mapa en vivo</div>
       </div>
     </div>
 
-    <div class="map-placeholder">
-      <div class="map-grid"></div>
-      <div class="map-pin">📍</div>
-      <div class="map-label">Mapa en vivo — 1.2 km al destino</div>
+    <!-- NO ACTIVE DELIVERY -->
+    <div id="noActiveDelivery">
+      <div style="margin:0 16px 20px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:24px;text-align:center;">
+        <div style="font-size:32px;margin-bottom:8px;">🛵</div>
+        <div style="font-size:14px;font-weight:600;margin-bottom:4px;">Sin entrega activa</div>
+        <div style="font-size:12px;color:var(--text2);">Acepta un pedido disponible abajo</div>
+      </div>
     </div>
 
+    <!-- AVAILABLE ORDERS -->
     <div class="section-label">Pedidos Disponibles</div>
-    <div class="order-queue">
-
-      <div class="queue-card">
-        <div class="queue-top">
-          <div class="queue-id">#TL-2852</div>
-          <div class="queue-pay">RD$220</div>
-        </div>
-        <div class="queue-route">📦 Moda Clara → C/ Las Flores #7, Los Jardines</div>
-        <div class="queue-meta">
-          <span>📍 2.4 km</span>
-          <span>⏱ ~12 min</span>
-          <span>📦 2 artículos</span>
-        </div>
-        <button class="accept-btn" onclick="acceptOrder(this, 'GY-2852')">Aceptar Pedido ↗</button>
-      </div>
-
-      <div class="queue-card">
-        <div class="queue-top">
-          <div class="queue-id">#TL-2853</div>
-          <div class="queue-pay">RD$180</div>
-        </div>
-        <div class="queue-route">📦 Beauty Hub → Av. Francia #204</div>
-        <div class="queue-meta">
-          <span>📍 1.8 km</span>
-          <span>⏱ ~9 min</span>
-          <span>📦 1 artículo</span>
-        </div>
-        <button class="accept-btn" onclick="acceptOrder(this, 'GY-2853')">Aceptar Pedido ↗</button>
-      </div>
-
+    <div class="order-queue" id="orderQueue">
+      <div style="padding:20px;color:var(--text3);text-align:center;">Cargando pedidos...</div>
     </div>
+
+    <!-- COMPLETED TODAY -->
+    <div class="section-label" id="completedLabel" style="display:none;">Completados Hoy</div>
+    <div class="order-queue" id="completedOrders" style="display:none;"></div>
 
     <div style="height:20px;"></div>
   </div>
 
   <div class="bottom-nav">
-    <div class="bottom-nav-item active" onclick="setTab(this)">
+    <div class="bottom-nav-item active" onclick="setTab(this, 'home')">
       <div class="bottom-nav-icon">🏠</div>
       <div class="bottom-nav-label">Inicio</div>
     </div>
-    <div class="bottom-nav-item" onclick="setTab(this)">
+    <div class="bottom-nav-item" onclick="setTab(this, 'orders')">
       <div class="bottom-nav-icon">📦</div>
-      <div class="bottom-nav-label">Pedidos</div>
+      <div class="bottom-nav-label">Historial</div>
     </div>
-    <div class="bottom-nav-item" onclick="setTab(this)">
+    <div class="bottom-nav-item" onclick="setTab(this, 'earnings')">
       <div class="bottom-nav-icon">💰</div>
       <div class="bottom-nav-label">Ganancias</div>
     </div>
-    <div class="bottom-nav-item" onclick="setTab(this)">
+    <div class="bottom-nav-item" onclick="logout()">
       <div class="bottom-nav-icon">👤</div>
-      <div class="bottom-nav-label">Perfil</div>
+      <div class="bottom-nav-label">Salir</div>
     </div>
   </div>
 </div>
@@ -280,24 +212,361 @@
 <div class="toast" id="toast"></div>
 
 <script>
-  function toggleOnline() {
-    const t = document.getElementById('onlineToggle');
-    t.classList.toggle('off');
-    showToast(t.classList.contains('off') ? '⏸ Ahora estás desconectado' : '✅ ¡Estás en línea!');
+  const API = 'https://traemeloo-production.up.railway.app/api';
+  const token = localStorage.getItem('tl_token');
+  const tlUser = JSON.parse(localStorage.getItem('tl_user') || 'null');
+
+  var activeOrderId = null;
+  var isOnline = false;
+
+  // ================================
+  // INIT
+  // ================================
+  window.addEventListener('DOMContentLoaded', function() {
+    // Set driver name
+    if (tlUser) {
+      var el = document.getElementById('driverName');
+      if (el) el.textContent = tlUser.name.split(' ')[0];
+    }
+    loadEarnings();
+    loadOrders();
+    setInterval(function() { loadOrders(); }, 20000); // refresh every 20s
+  });
+
+  // ================================
+  // ONLINE TOGGLE
+  // ================================
+  async function toggleOnline() {
+    var t = document.getElementById('onlineToggle');
+    isOnline = !isOnline;
+    t.classList.toggle('off', !isOnline);
+
+    var statusLabel = document.getElementById('onlineStatusLabel');
+    if (statusLabel) {
+      statusLabel.textContent = isOnline ? '✓ Estás recibiendo pedidos' : '⏸ No estás recibiendo pedidos';
+      statusLabel.style.color = isOnline ? 'var(--green)' : 'var(--text3)';
+    }
+
+    showToast(isOnline ? '✅ ¡Estás en línea!' : '⏸ Ahora estás desconectado');
+
+    try {
+      await fetch(API + '/drivers/status', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+        body: JSON.stringify({ status: isOnline ? 'ONLINE' : 'OFFLINE' }),
+      });
+    } catch(e) { console.log('Status update error:', e); }
   }
-  function setTab(el) { document.querySelectorAll('.bottom-nav-item').forEach(i => i.classList.remove('active')); el.classList.add('active'); }
-  function markDelivered() { showToast('🎉 ¡Entrega completada! +RD$160 de propina ganada'); }
-  function acceptOrder(btn, id) {
-    btn.textContent = '✓ ¡Aceptado!';
-    btn.style.background = 'rgba(0,229,160,0.2)';
-    btn.style.color = 'var(--green)';
-    btn.style.border = '1px solid var(--green)';
-    showToast(`Pedido #${id} agregado a tu cola`);
+
+  // ================================
+  // LOAD EARNINGS
+  // ================================
+  async function loadEarnings() {
+    try {
+      var res = await fetch(API + '/drivers/earnings', {
+        headers: { 'Authorization': 'Bearer ' + token }
+      });
+      var data = await res.json();
+      if (!res.ok) return;
+
+      var todayEl = document.getElementById('statToday');
+      if (todayEl) todayEl.innerHTML = 'RD$<br>' + (data.today || 0).toLocaleString();
+
+      var weekEl = document.getElementById('weekEarnings');
+      if (weekEl) weekEl.textContent = 'RD$' + (data.week || 0).toLocaleString();
+
+      var delivEl = document.getElementById('statDeliveries');
+      if (delivEl) delivEl.textContent = data.totalDeliveries || 0;
+
+      var ratingEl = document.getElementById('statRating');
+      if (ratingEl) ratingEl.textContent = data.rating ? parseFloat(data.rating).toFixed(1) + '★' : '-★';
+    } catch(e) { console.log('Earnings error:', e); }
   }
-  function showToast(msg) {
-    const t = document.getElementById('toast');
-    t.textContent = msg; t.classList.add('show');
-    setTimeout(() => t.classList.remove('show'), 2500);
+
+  // ================================
+  // LOAD ORDERS
+  // ================================
+  async function loadOrders() {
+    try {
+      var res = await fetch(API + '/orders?limit=50', {
+        headers: { 'Authorization': 'Bearer ' + token }
+      });
+      var data = await res.json();
+      if (!res.ok) return;
+
+      var orders = data.orders || [];
+
+      // Find active order (assigned to this driver, not delivered)
+      var activeStatuses = ['ASSIGNED', 'PICKED_UP', 'EN_ROUTE'];
+      var readyOrders = []; // READY orders available to pick up
+      var completedToday = [];
+      var active = null;
+
+      orders.forEach(function(o) {
+        if (activeStatuses.includes(o.status)) active = o;
+        else if (o.status === 'READY') readyOrders.push(o);
+        else if (o.status === 'DELIVERED') completedToday.push(o);
+      });
+
+      renderActiveDelivery(active);
+      renderAvailableOrders(readyOrders);
+      renderCompleted(completedToday);
+
+    } catch(e) { console.log('Orders error:', e); }
+  }
+
+  // ================================
+  // RENDER ACTIVE DELIVERY
+  // ================================
+  function renderActiveDelivery(order) {
+    var section = document.getElementById('activeDeliverySection');
+    var noActive = document.getElementById('noActiveDelivery');
+
+    if (!order) {
+      if (section) section.style.display = 'none';
+      if (noActive) noActive.style.display = 'block';
+      activeOrderId = null;
+      return;
+    }
+
+    activeOrderId = order.id;
+    if (section) section.style.display = 'block';
+    if (noActive) noActive.style.display = 'none';
+
+    var shopName = order.shop ? order.shop.name : 'Tienda';
+    var shopAddr = order.shop ? order.shop.address : '';
+    var customerName = order.customer && order.customer.user ? order.customer.user.name : 'Cliente';
+    var customerPhone = order.customer && order.customer.user ? order.customer.user.phone : '';
+    var deliveryAddr = order.deliveryAddress || 'Dirección del cliente';
+    var itemCount = order.items ? order.items.length : 0;
+
+    // Progress steps
+    var steps = {
+      'ASSIGNED':  [true,  false, false, false],
+      'PICKED_UP': [true,  true,  false, false],
+      'EN_ROUTE':  [true,  true,  true,  false],
+      'DELIVERED': [true,  true,  true,  true],
+    };
+    var progress = steps[order.status] || [true, false, false, false];
+
+    function stepDot(done, current, label, icon) {
+      var cls = done ? 'done' : (current ? 'current' : 'pending');
+      var content = done ? '✓' : (current ? icon : '');
+      return '<div class="step">' +
+        '<div class="step-dot ' + cls + '">' + content + '</div>' +
+        '<div class="step-label">' + label + '</div>' +
+      '</div>';
+    }
+
+    var nextAction = '';
+    if (order.status === 'ASSIGNED') {
+      nextAction = '<button class="del-btn primary" onclick="updateStatus(\'PICKED_UP\')">Llegué a la tienda ✓</button>';
+    } else if (order.status === 'PICKED_UP') {
+      nextAction = '<button class="del-btn primary" onclick="updateStatus(\'EN_ROUTE\')">Recogido — En Camino 🛵</button>';
+    } else if (order.status === 'EN_ROUTE') {
+      nextAction = '<button class="del-btn primary" onclick="updateStatus(\'DELIVERED\')">Marcar Entregado ✓</button>';
+    }
+
+    var card = document.getElementById('activeDeliveryCard');
+    if (card) {
+      card.innerHTML =
+        '<div class="delivery-order-id">PEDIDO #' + order.orderNumber + '</div>' +
+
+        '<div style="display:flex;align-items:center;margin-bottom:16px;">' +
+          stepDot(progress[0], false, 'Asignado', '') +
+          '<div class="step-connector ' + (progress[1] ? 'done' : '') + '"></div>' +
+          stepDot(progress[1], !progress[1] && progress[0], 'En Tienda', '🏪') +
+          '<div class="step-connector ' + (progress[2] ? 'done' : '') + '"></div>' +
+          stepDot(progress[2], !progress[2] && progress[1], 'En Camino', '🛵') +
+          '<div class="step-connector ' + (progress[3] ? 'done' : '') + '"></div>' +
+          stepDot(progress[3], !progress[3] && progress[2], 'Entregado', '📦') +
+        '</div>' +
+
+        '<div class="delivery-route">' +
+          '<div class="route-point">' +
+            '<div class="route-dot pickup"></div>' +
+            '<div>' +
+              '<div class="route-text-label">Recoger en</div>' +
+              '<div class="route-text-addr">' + shopName + ' · ' + shopAddr + '</div>' +
+            '</div>' +
+          '</div>' +
+          '<div style="margin-left:4px;"><div class="route-line"></div></div>' +
+          '<div class="route-point">' +
+            '<div class="route-dot dropoff"></div>' +
+            '<div>' +
+              '<div class="route-text-label">Entregar a</div>' +
+              '<div class="route-text-addr">' + customerName + ' · ' + deliveryAddr + '</div>' +
+            '</div>' +
+          '</div>' +
+        '</div>' +
+
+        '<div style="display:flex;gap:12px;font-size:13px;color:var(--text2);margin-bottom:14px;">' +
+          '<span>📦 ' + itemCount + ' artículo(s)</span>' +
+          '<span>💰 RD$' + order.total.toLocaleString() + '</span>' +
+          '<span>💳 ' + (order.paymentMethod === 'CASH' ? 'Efectivo' : 'Tarjeta') + '</span>' +
+        '</div>' +
+
+        '<div class="delivery-actions">' +
+          (customerPhone ? '<button class="del-btn secondary" onclick="window.location.href=\'tel:' + customerPhone + '\'">📞 Llamar</button>' : '') +
+          '<button class="del-btn secondary" onclick="openMaps(\'' + deliveryAddr + '\')">🗺 Navegar</button>' +
+          nextAction +
+        '</div>';
+    }
+
+    var mapLabel = document.getElementById('mapLabel');
+    if (mapLabel) mapLabel.textContent = 'Navegando a ' + (order.status === 'ASSIGNED' ? shopName : customerName);
+  }
+
+  // ================================
+  // RENDER AVAILABLE ORDERS
+  // ================================
+  function renderAvailableOrders(orders) {
+    var queue = document.getElementById('orderQueue');
+    if (!queue) return;
+
+    if (orders.length === 0) {
+      queue.innerHTML = '<div style="padding:20px;color:var(--text3);text-align:center;">No hay pedidos disponibles ahora.<br>Se actualizará automáticamente.</div>';
+      return;
+    }
+
+    queue.innerHTML = orders.map(function(order) {
+      var shopName = order.shop ? order.shop.name : 'Tienda';
+      var deliveryAddr = order.deliveryAddress || 'Dirección del cliente';
+      var itemCount = order.items ? order.items.length : 0;
+      var driverPay = 120; // base driver pay per delivery
+
+      return '<div class="queue-card" id="qcard-' + order.id + '">' +
+        '<div class="queue-top">' +
+          '<div class="queue-id">#' + order.orderNumber + '</div>' +
+          '<div class="queue-pay">RD$' + driverPay + '</div>' +
+        '</div>' +
+        '<div class="queue-route">📦 ' + shopName + ' → ' + deliveryAddr.substring(0, 40) + '</div>' +
+        '<div class="queue-meta">' +
+          '<span>📦 ' + itemCount + ' artículo(s)</span>' +
+          '<span>💳 ' + (order.paymentMethod === 'CASH' ? '💵 Efectivo' : '💳 Tarjeta') + '</span>' +
+        '</div>' +
+        '<button class="accept-btn" onclick="acceptOrder(\'' + order.id + '\', this)">Aceptar Pedido ↗</button>' +
+      '</div>';
+    }).join('');
+  }
+
+  // ================================
+  // RENDER COMPLETED
+  // ================================
+  function renderCompleted(orders) {
+    var label = document.getElementById('completedLabel');
+    var container = document.getElementById('completedOrders');
+    if (!label || !container) return;
+
+    if (orders.length === 0) {
+      label.style.display = 'none';
+      container.style.display = 'none';
+      return;
+    }
+
+    label.style.display = 'block';
+    container.style.display = 'block';
+    container.innerHTML = orders.map(function(o) {
+      var shopName = o.shop ? o.shop.name : 'Tienda';
+      return '<div class="queue-card" style="border-color:rgba(0,229,160,0.2);">' +
+        '<div class="queue-top">' +
+          '<div class="queue-id">#' + o.orderNumber + '</div>' +
+          '<div style="color:var(--green);font-size:13px;font-weight:700;">✓ Entregado</div>' +
+        '</div>' +
+        '<div class="queue-route">📦 ' + shopName + ' · RD$' + o.total.toLocaleString() + '</div>' +
+      '</div>';
+    }).join('');
+  }
+
+  // ================================
+  // ACCEPT ORDER
+  // ================================
+  async function acceptOrder(orderId, btn) {
+    if (activeOrderId) {
+      showToast('Ya tienes una entrega activa', 'var(--brand)');
+      return;
+    }
+    btn.textContent = 'Aceptando...';
+    btn.disabled = true;
+
+    try {
+      var res = await fetch(API + '/orders/' + orderId + '/status', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+        body: JSON.stringify({ status: 'ASSIGNED', message: 'Motorista en camino a la tienda' }),
+      });
+      var data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+
+      showToast('✅ ¡Pedido aceptado! Ve a la tienda.');
+      loadOrders();
+    } catch(e) {
+      showToast('Error: ' + e.message, 'var(--brand)');
+      btn.textContent = 'Aceptar Pedido ↗';
+      btn.disabled = false;
+    }
+  }
+
+  // ================================
+  // UPDATE DELIVERY STATUS
+  // ================================
+  async function updateStatus(status) {
+    if (!activeOrderId) return;
+
+    var messages = {
+      'PICKED_UP': 'Paquete recogido, en camino al cliente',
+      'EN_ROUTE':  'Motorista en camino al cliente',
+      'DELIVERED': '¡Pedido entregado exitosamente!',
+    };
+
+    try {
+      var res = await fetch(API + '/orders/' + activeOrderId + '/status', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+        body: JSON.stringify({ status: status, message: messages[status] }),
+      });
+      var data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+
+      if (status === 'DELIVERED') {
+        showToast('🎉 ¡Entrega completada! Bien hecho.');
+        activeOrderId = null;
+        loadEarnings();
+      } else {
+        showToast(messages[status]);
+      }
+      loadOrders();
+    } catch(e) {
+      showToast('Error: ' + e.message, 'var(--brand)');
+    }
+  }
+
+  // ================================
+  // HELPERS
+  // ================================
+  function openMaps(address) {
+    var url = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(address + ', Santiago, República Dominicana');
+    window.open(url, '_blank');
+  }
+
+  function setTab(el, tab) {
+    document.querySelectorAll('.bottom-nav-item').forEach(function(i) { i.classList.remove('active'); });
+    el.classList.add('active');
+    if (tab === 'earnings') showToast('Ganancias — próximamente');
+    if (tab === 'orders') showToast('Historial — próximamente');
+  }
+
+  function logout() {
+    localStorage.clear();
+    window.location.href = 'traemeloo-auth.html';
+  }
+
+  function showToast(msg, color) {
+    var t = document.getElementById('toast');
+    t.textContent = msg;
+    t.style.background = color || 'var(--green)';
+    t.classList.add('show');
+    setTimeout(function() { t.classList.remove('show'); }, 2500);
   }
 </script>
 </body>
