@@ -186,7 +186,7 @@
     <div class="stats-grid">
       <div class="stat-card green">
         <div class="stat-icon">💰</div>
-        <div class="stat-val green">RD$48,200</div>
+        <div class="stat-val green" id="statRevenue">RD$48,200</div>
         <div class="stat-label">Ventas de Hoy</div>
         <div class="stat-change">↑ 14% vs ayer</div>
       </div>
@@ -217,81 +217,14 @@
           <div class="panel-header">
             <div class="panel-title">Pedidos en Vivo</div>
             <div class="order-filters">
-              <button class="filter-btn active" onclick="filterOrders(this)">Todos</button>
-              <button class="filter-btn" onclick="filterOrders(this)">Nuevos</button>
-              <button class="filter-btn" onclick="filterOrders(this)">Preparando</button>
-              <button class="filter-btn" onclick="filterOrders(this)">Listos</button>
+              <button class="filter-btn active" onclick="filterOrders(this,'all')">Todos</button>
+              <button class="filter-btn" onclick="filterOrders(this,'PENDING')">Nuevos</button>
+              <button class="filter-btn" onclick="filterOrders(this,'PREPARING')">Preparando</button>
+              <button class="filter-btn" onclick="filterOrders(this,'READY')">Listos</button>
             </div>
           </div>
-          <div class="order-list">
-
-            <div class="order-row">
-              <div class="order-id">#TL-2851</div>
-              <div class="order-customer">
-                <div class="order-name">María González</div>
-                <div class="order-items-count">3 artículos · Funda iPhone, Cable USB, Audífonos</div>
-              </div>
-              <div class="order-total">RD$3,500</div>
-              <div class="order-status status-new">Nuevo</div>
-              <div class="order-actions">
-                <button class="action-btn" onclick="acceptOrder(this)">Aceptar</button>
-                <button class="action-btn danger" onclick="showToast('Pedido rechazado')">✕</button>
-              </div>
-            </div>
-
-            <div class="order-row">
-              <div class="order-id">#TL-2850</div>
-              <div class="order-customer">
-                <div class="order-name">Carlos Méndez</div>
-                <div class="order-items-count">1 artículo · Batería Portátil 20000mAh</div>
-              </div>
-              <div class="order-total">RD$1,800</div>
-              <div class="order-status status-preparing">Preparando</div>
-              <div class="order-actions">
-                <button class="action-btn" onclick="readyOrder(this)" style="background:rgba(255,140,66,0.15);border-color:var(--orange);color:var(--orange)">Listo</button>
-              </div>
-            </div>
-
-            <div class="order-row">
-              <div class="order-id">#TL-2849</div>
-              <div class="order-customer">
-                <div class="order-name">Ana Jiménez</div>
-                <div class="order-items-count">2 artículos · Protector de Pantalla x2</div>
-              </div>
-              <div class="order-total">RD$900</div>
-              <div class="order-status status-ready">Listo</div>
-              <div class="order-actions">
-                <button class="action-btn" onclick="showToast('¡Motorista notificado para recoger!')" style="background:rgba(255,140,66,0.15);border-color:var(--orange);color:var(--orange)">Notificar Motorista</button>
-              </div>
-            </div>
-
-            <div class="order-row">
-              <div class="order-id">#TL-2848</div>
-              <div class="order-customer">
-                <div class="order-name">Luis Rosario</div>
-                <div class="order-items-count">4 artículos · Varios accesorios</div>
-              </div>
-              <div class="order-total">RD$6,200</div>
-              <div class="order-status status-new">Nuevo</div>
-              <div class="order-actions">
-                <button class="action-btn" onclick="acceptOrder(this)">Aceptar</button>
-                <button class="action-btn danger" onclick="showToast('Pedido rechazado')">✕</button>
-              </div>
-            </div>
-
-            <div class="order-row">
-              <div class="order-id">#TL-2847</div>
-              <div class="order-customer">
-                <div class="order-name">Roberto Pérez</div>
-                <div class="order-items-count">1 artículo · Cargador Inalámbrico</div>
-              </div>
-              <div class="order-total">RD$1,200</div>
-              <div class="order-status status-delivered">Entregado ✓</div>
-              <div class="order-actions">
-                <button class="action-btn" onclick="showToast('¡Recibo enviado!')">Recibo</button>
-              </div>
-            </div>
-
+          <div class="order-list" id="orderList">
+            <div style="padding:20px;color:var(--text3);text-align:center;">Cargando pedidos...</div>
           </div>
         </div>
 
@@ -332,51 +265,7 @@
             <button class="action-btn" onclick="openProductModal()">+ Agregar</button>
           </div>
           <div>
-            <div class="product-row">
-              <div class="product-row-img">📱</div>
-              <div class="product-row-info">
-                <div class="product-row-name">Funda iPhone 15</div>
-                <div class="product-row-stock">Existencia: 48 unidades</div>
-              </div>
-              <div class="product-row-price">RD$850</div>
-              <button class="stock-toggle" onclick="toggleStock(this)"></button>
-            </div>
-            <div class="product-row">
-              <div class="product-row-img">🔌</div>
-              <div class="product-row-info">
-                <div class="product-row-name">Cable USB-C 2m</div>
-                <div class="product-row-stock">Existencia: 120 unidades</div>
-              </div>
-              <div class="product-row-price">RD$450</div>
-              <button class="stock-toggle" onclick="toggleStock(this)"></button>
-            </div>
-            <div class="product-row">
-              <div class="product-row-img">🎧</div>
-              <div class="product-row-info">
-                <div class="product-row-name">Audífonos Inalámbricos Pro</div>
-                <div class="product-row-stock stock-low">Existencia: 2 unidades ⚠️</div>
-              </div>
-              <div class="product-row-price">RD$2,200</div>
-              <button class="stock-toggle" onclick="toggleStock(this)"></button>
-            </div>
-            <div class="product-row">
-              <div class="product-row-img">🔋</div>
-              <div class="product-row-info">
-                <div class="product-row-name">Batería Portátil 20000mAh</div>
-                <div class="product-row-stock">Existencia: 35 unidades</div>
-              </div>
-              <div class="product-row-price">RD$1,800</div>
-              <button class="stock-toggle" onclick="toggleStock(this)"></button>
-            </div>
-            <div class="product-row">
-              <div class="product-row-img">⚡</div>
-              <div class="product-row-info">
-                <div class="product-row-name">Base de Carga Inalámbrica</div>
-                <div class="product-row-stock">Existencia: 0 — Agotado</div>
-              </div>
-              <div class="product-row-price">RD$1,200</div>
-              <button class="stock-toggle off" onclick="toggleStock(this)"></button>
-            </div>
+            <div id="productList"><div style="padding:20px;color:var(--text3);">Cargando productos...</div></div>
           </div>
         </div>
 
@@ -416,21 +305,21 @@
     <h3>+ Agregar Nuevo Producto</h3>
     <div class="form-group">
       <label>Nombre del Producto</label>
-      <input type="text" placeholder="ej. Funda iPhone 15">
+      <input type="text" id="prodName" placeholder="ej. Funda iPhone 15">
     </div>
     <div class="form-row">
       <div class="form-group">
         <label>Precio (RD$)</label>
-        <input type="number" placeholder="850">
+        <input type="number" id="prodPrice" placeholder="850">
       </div>
       <div class="form-group">
         <label>Cantidad en Existencia</label>
-        <input type="number" placeholder="50">
+        <input type="number" id="prodStock" placeholder="50">
       </div>
     </div>
     <div class="form-group">
       <label>Categoría</label>
-      <select>
+      <select id="prodCategory">
         <option>Electrónica</option>
         <option>Moda</option>
         <option>Hogar y Decoración</option>
@@ -441,7 +330,7 @@
     </div>
     <div class="form-group">
       <label>Descripción</label>
-      <textarea placeholder="Breve descripción del producto..."></textarea>
+      <textarea id="prodDesc" placeholder="Breve descripción del producto..."></textarea>
     </div>
     <div class="modal-actions">
       <button class="btn-cancel" onclick="closeModal()">Cancelar</button>
@@ -453,34 +342,263 @@
 <div class="toast" id="toast"></div>
 
 <script>
-  function setNav(el) { document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active')); el.classList.add('active'); }
-  function filterOrders(el) { document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active')); el.classList.add('active'); }
-  function acceptOrder(btn) {
-    const statusEl = btn.closest('.order-row').querySelector('.order-status');
-    statusEl.className = 'order-status status-preparing';
-    statusEl.textContent = 'Preparando';
-    btn.parentElement.innerHTML = '<button class="action-btn" onclick="readyOrder(this)" style="background:rgba(255,140,66,0.15);border-color:var(--orange);color:var(--orange)">Listo</button>';
-    showToast('¡Pedido aceptado! Empieza a preparar.');
+  const API = 'https://traemeloo-production.up.railway.app/api';
+  const token = localStorage.getItem('tl_token');
+  const tlUser = JSON.parse(localStorage.getItem('tl_user') || 'null');
+
+  // ================================
+  // NAV & UI HELPERS
+  // ================================
+  function setNav(el) {
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    el.classList.add('active');
   }
-  function readyOrder(btn) {
-    const statusEl = btn.closest('.order-row').querySelector('.order-status');
-    statusEl.className = 'order-status status-ready';
-    statusEl.textContent = 'Listo';
-    btn.parentElement.innerHTML = '<button class="action-btn" onclick="showToast(\'¡Motorista notificado!\')" style="background:rgba(255,140,66,0.15);border-color:var(--orange);color:var(--orange)">Notificar Motorista</button>';
-    showToast('¡Pedido marcado como listo! Notificando al motorista.');
+  function filterOrders(el, status) {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    el.classList.add('active');
+    loadOrders(status === 'all' ? null : status);
   }
-  function toggleStock(btn) {
-    btn.classList.toggle('off');
-    showToast(btn.classList.contains('off') ? 'Producto oculto de la tienda' : 'Producto visible en la tienda');
+  function showToast(msg, color) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.style.background = color || 'var(--green)';
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2800);
   }
   function openProductModal() { document.getElementById('productModal').classList.add('open'); }
   function closeModal() { document.getElementById('productModal').classList.remove('open'); }
-  function saveProduct() { closeModal(); showToast('✅ ¡Producto agregado exitosamente!'); }
-  function showToast(msg) {
-    const t = document.getElementById('toast');
-    t.textContent = msg; t.classList.add('show');
-    setTimeout(() => t.classList.remove('show'), 2800);
+
+  // ================================
+  // LOAD DASHBOARD STATS
+  // ================================
+  async function loadDashboard() {
+    try {
+      const res = await fetch(API + '/shops/my/dashboard', {
+        headers: { 'Authorization': 'Bearer ' + token }
+      });
+      const data = await res.json();
+      if (!res.ok) return;
+
+      document.getElementById('statRevenue').textContent = 'RD$' + (data.todayRevenue || 0).toLocaleString();
+      document.getElementById('statOrders').textContent = data.todayOrders || 0;
+      document.getElementById('statPending').textContent = data.pendingOrders || 0;
+      document.getElementById('statRating').textContent = data.rating ? parseFloat(data.rating).toFixed(1) : '-';
+    } catch(e) { console.log('Dashboard error:', e); }
   }
+
+  // ================================
+  // LOAD REAL ORDERS
+  // ================================
+  async function loadOrders(statusFilter) {
+    const container = document.getElementById('orderList');
+    container.innerHTML = '<div style="padding:20px;color:var(--text3);text-align:center;">Cargando pedidos...</div>';
+
+    try {
+      let url = API + '/orders?limit=50';
+      if (statusFilter) url += '&status=' + statusFilter;
+
+      const res = await fetch(url, {
+        headers: { 'Authorization': 'Bearer ' + token }
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+
+      const orders = data.orders || [];
+      if (orders.length === 0) {
+        container.innerHTML = '<div style="padding:32px;color:var(--text3);text-align:center;">No hay pedidos aún.<br><br>Cuando un cliente haga un pedido aparecerá aquí.</div>';
+        return;
+      }
+
+      container.innerHTML = orders.map(order => buildOrderRow(order)).join('');
+    } catch(e) {
+      container.innerHTML = '<div style="padding:20px;color:var(--brand);">Error cargando pedidos: ' + e.message + '</div>';
+    }
+  }
+
+  function buildOrderRow(order) {
+    const statusMap = {
+      'PENDING':   { label: 'Nuevo',      cls: 'status-new' },
+      'ACCEPTED':  { label: 'Aceptado',   cls: 'status-preparing' },
+      'PREPARING': { label: 'Preparando', cls: 'status-preparing' },
+      'READY':     { label: 'Listo',      cls: 'status-ready' },
+      'ASSIGNED':  { label: 'Asignado',   cls: 'status-ready' },
+      'PICKED_UP': { label: 'Recogido',   cls: 'status-ready' },
+      'EN_ROUTE':  { label: 'En Camino',  cls: 'status-delivered' },
+      'DELIVERED': { label: 'Entregado ✓', cls: 'status-delivered' },
+      'CANCELLED': { label: 'Cancelado',  cls: 'status-new' },
+      'REJECTED':  { label: 'Rechazado',  cls: 'status-new' },
+    };
+
+    const s = statusMap[order.status] || { label: order.status, cls: 'status-new' };
+    const customerName = order.customer?.user?.name || 'Cliente';
+    const itemCount = order.items ? order.items.length : '?';
+    const itemNames = order.items ? order.items.map(i => i.name).join(', ') : '';
+    const payMethod = order.paymentMethod === 'CASH' ? '💵 Efectivo' : '💳 Tarjeta';
+    const time = new Date(order.createdAt).toLocaleTimeString('es-DO', { hour: '2-digit', minute: '2-digit' });
+
+    let actions = '';
+    if (order.status === 'PENDING') {
+      actions =
+        '<button class="action-btn" onclick="updateOrderStatus(\'' + order.id + '\', \'ACCEPTED\', this)">Aceptar</button>' +
+        '<button class="action-btn danger" onclick="updateOrderStatus(\'' + order.id + '\', \'REJECTED\', this)">✕</button>';
+    } else if (order.status === 'ACCEPTED') {
+      actions = '<button class="action-btn" onclick="updateOrderStatus(\'' + order.id + '\', \'PREPARING\', this)" style="background:rgba(74,158,255,0.15);border-color:var(--blue);color:var(--blue)">Preparando</button>';
+    } else if (order.status === 'PREPARING') {
+      actions = '<button class="action-btn" onclick="updateOrderStatus(\'' + order.id + '\', \'READY\', this)" style="background:rgba(255,140,66,0.15);border-color:var(--orange);color:var(--orange)">Marcar Listo</button>';
+    } else if (order.status === 'READY') {
+      actions = '<span style="font-size:12px;color:var(--green);">Esperando motorista...</span>';
+    } else if (order.status === 'DELIVERED') {
+      actions = '<button class="action-btn" onclick="showToast(\'Recibo enviado!\')">Recibo</button>';
+    }
+
+    return '<div class="order-row" id="order-' + order.id + '">' +
+      '<div class="order-id">#' + order.orderNumber + '</div>' +
+      '<div class="order-customer">' +
+        '<div class="order-name">' + customerName + '</div>' +
+        '<div class="order-items-count">' + itemCount + ' artículo(s) · ' + itemNames.substring(0, 40) + (itemNames.length > 40 ? '...' : '') + '</div>' +
+        '<div class="order-items-count" style="margin-top:2px;">' + payMethod + ' · ' + time + '</div>' +
+      '</div>' +
+      '<div class="order-total">RD$' + order.total.toLocaleString() + '</div>' +
+      '<div class="order-status ' + s.cls + '">' + s.label + '</div>' +
+      '<div class="order-actions">' + actions + '</div>' +
+    '</div>';
+  }
+
+  // ================================
+  // UPDATE ORDER STATUS
+  // ================================
+  async function updateOrderStatus(orderId, status, btn) {
+    if (btn) { btn.disabled = true; btn.textContent = '...'; }
+
+    const messages = {
+      'ACCEPTED': '¡Pedido aceptado! Empieza a preparar.',
+      'PREPARING': 'Pedido en preparación.',
+      'READY': '¡Pedido listo! Notificando motorista.',
+      'REJECTED': 'Pedido rechazado.',
+    };
+
+    try {
+      const res = await fetch(API + '/orders/' + orderId + '/status', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+        body: JSON.stringify({ status: status, message: messages[status] || status }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+
+      showToast(messages[status] || 'Estado actualizado', status === 'REJECTED' ? 'var(--brand)' : 'var(--green)');
+
+      // Refresh the order row
+      const row = document.getElementById('order-' + orderId);
+      if (row) row.outerHTML = buildOrderRow(data);
+
+      // Refresh stats
+      loadDashboard();
+    } catch(e) {
+      showToast('Error: ' + e.message, 'var(--brand)');
+      if (btn) { btn.disabled = false; btn.textContent = 'Aceptar'; }
+    }
+  }
+
+  // ================================
+  // LOAD PRODUCTS
+  // ================================
+  async function loadProducts() {
+    const container = document.getElementById('productList');
+    if (!container) return;
+    try {
+      const res = await fetch(API + '/sellers/me', {
+        headers: { 'Authorization': 'Bearer ' + token }
+      });
+      const data = await res.json();
+      if (!res.ok || !data.shop) return;
+
+      const products = data.shop.products || [];
+      if (products.length === 0) {
+        container.innerHTML = '<div style="padding:20px;color:var(--text3);">No tienes productos. ¡Agrega uno!</div>';
+        return;
+      }
+
+      container.innerHTML = products.map(p => {
+        const isActive = p.status === 'ACTIVE';
+        return '<div class="product-row">' +
+          '<div class="product-row-img">📦</div>' +
+          '<div class="product-row-info">' +
+            '<div class="product-row-name">' + p.name + '</div>' +
+            '<div class="product-row-stock ' + (p.stock <= 3 ? 'stock-low' : '') + '">Existencia: ' + p.stock + ' unidades' + (p.stock === 0 ? ' — Agotado ⚠️' : p.stock <= 3 ? ' ⚠️' : '') + '</div>' +
+          '</div>' +
+          '<div class="product-row-price">RD$' + p.price.toLocaleString() + '</div>' +
+          '<button class="stock-toggle ' + (isActive ? '' : 'off') + '" onclick="toggleProductStatus(\'' + p.id + '\', this)"></button>' +
+        '</div>';
+      }).join('');
+    } catch(e) { console.log('Products error:', e); }
+  }
+
+  // ================================
+  // TOGGLE PRODUCT STATUS
+  // ================================
+  async function toggleProductStatus(productId, btn) {
+    const isCurrentlyOn = !btn.classList.contains('off');
+    const newStatus = isCurrentlyOn ? 'HIDDEN' : 'ACTIVE';
+    try {
+      const res = await fetch(API + '/products/' + productId, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+        body: JSON.stringify({ status: newStatus }),
+      });
+      if (!res.ok) throw new Error('Error');
+      btn.classList.toggle('off');
+      showToast(isCurrentlyOn ? 'Producto oculto de la tienda' : 'Producto visible en la tienda');
+    } catch(e) {
+      showToast('Error actualizando producto', 'var(--brand)');
+    }
+  }
+
+  // ================================
+  // SAVE NEW PRODUCT
+  // ================================
+  async function saveProduct() {
+    const name = document.getElementById('prodName').value.trim();
+    const price = document.getElementById('prodPrice').value;
+    const stock = document.getElementById('prodStock').value;
+    const category = document.getElementById('prodCategory').value;
+    const description = document.getElementById('prodDesc').value.trim();
+
+    if (!name || !price || !stock) { showToast('Completa nombre, precio y cantidad', 'var(--brand)'); return; }
+
+    try {
+      const res = await fetch(API + '/products', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+        body: JSON.stringify({ name, price: Number(price), stock: Number(stock), category, description }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+
+      closeModal();
+      showToast('✅ ¡Producto agregado exitosamente!');
+      loadProducts();
+    } catch(e) {
+      showToast('Error: ' + e.message, 'var(--brand)');
+    }
+  }
+
+  // ================================
+  // AUTO REFRESH ORDERS every 30 sec
+  // ================================
+  function startAutoRefresh() {
+    loadOrders();
+    setInterval(function() { loadOrders(); loadDashboard(); }, 30000);
+  }
+
+  // ================================
+  // INIT
+  // ================================
+  window.addEventListener('DOMContentLoaded', function() {
+    loadDashboard();
+    startAutoRefresh();
+    loadProducts();
+  });
 </script>
 </body>
 </html>
