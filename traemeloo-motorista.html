@@ -107,13 +107,12 @@
 <body>
 <script>
   (function() {
-    var token = localStorage.getItem('tl_token');
-    var user = JSON.parse(localStorage.getItem('tl_user') || 'null');
-    if (!token || !user) { window.location.href = 'traemeloo-auth.html'; return; }
-    if (user.role !==  + role + ) { window.location.href = 'traemeloo-auth.html'; return; }
+    var t = localStorage.getItem("tl_token");
+    var u = JSON.parse(localStorage.getItem("tl_user") || "null");
+    if (!t || !u) { window.location.href = "traemeloo-auth.html"; return; }
+    if (u.role !== "DRIVER") { alert("Acceso no autorizado. Redirigiendo..."); window.location.href = "traemeloo-auth.html"; return; }
   })();
 </script>
-
 <div class="phone">
   <div class="phone-notch"></div>
   <div class="phone-screen">
