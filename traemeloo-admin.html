@@ -127,6 +127,14 @@
 </style>
 </head>
 <body>
+<script>
+  (function() {
+    var token = localStorage.getItem('tl_token');
+    var user = JSON.parse(localStorage.getItem('tl_user') || 'null');
+    if (!token || !user) { window.location.href = 'traemeloo-auth.html'; return; }
+    if (user.role !==  + role + ) { window.location.href = 'traemeloo-auth.html'; return; }
+  })();
+</script>
 
 <aside class="sidebar">
   <div class="sidebar-top">

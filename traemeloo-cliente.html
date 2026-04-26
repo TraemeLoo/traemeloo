@@ -510,12 +510,50 @@
   }
 
   // ================================
-  // CHECKOUT WITH STRIPE
+  // CHECKOUT — Show payment method selection
   // ================================
-  async function handleCheckout() {
+  function handleCheckout() {
     if (!token) { window.location.href = 'traemeloo-auth.html'; return; }
     if (cart.length === 0) { alert('Tu carrito está vacío'); return; }
-    if (!currentShopId) { alert('Error: no hay tienda seleccionada'); return; }
+    if (!currentShopId) { alert('Selecciona una tienda primero'); return; }
+
+    var subtotal = cart.reduce(function(s,i){return s+(i.price*i.quantity);},0);
+    var total = subtotal + (subtotal >= 3000 ? 0 : 80);
+
+    // Show payment method modal
+    var modal = document.createElement('div');
+    modal.id = 'payMethodModal';
+    modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px;';
+    modal.innerHTML =
+      '<div style="background:#141414;border:1px solid #2E2E2E;border-radius:16px;padding:32px;width:100%;max-width:400px;">' +
+        '<h3 style="font-family:Unbounded,sans-serif;font-size:18px;margin-bottom:6px;color:#F5F5F0;">¿Cómo quieres pagar?</h3>' +
+        '<p style="color:#A0A0A0;font-size:13px;margin-bottom:24px;">Total: <strong style="color:#F5F5F0;">RD$' + total.toLocaleString() + '</strong></p>' +
+
+        '<button onclick="selectPayMethod(\'CARD\')" style="width:100%;background:#1E1E1E;border:1.5px solid #2E2E2E;border-radius:12px;padding:16px 20px;margin-bottom:10px;cursor:pointer;display:flex;align-items:center;gap:14px;transition:border-color .2s;" onmouseover="this.style.borderColor=\'#FF3C2F\'" onmouseout="this.style.borderColor=\'#2E2E2E\'">' +
+          '<span style="font-size:28px;">💳</span>' +
+          '<div style="text-align:left;">' +
+            '<div style="color:#F5F5F0;font-weight:600;font-size:14px;">Tarjeta de crédito/débito</div>' +
+            '<div style="color:#A0A0A0;font-size:12px;">Pago seguro con Stripe</div>' +
+          '</div>' +
+        '</button>' +
+
+        '<button onclick="selectPayMethod(\'CASH\')" style="width:100%;background:#1E1E1E;border:1.5px solid #2E2E2E;border-radius:12px;padding:16px 20px;margin-bottom:10px;cursor:pointer;display:flex;align-items:center;gap:14px;transition:border-color .2s;" onmouseover="this.style.borderColor=\'#FF3C2F\'" onmouseout="this.style.borderColor=\'#2E2E2E\'">' +
+          '<span style="font-size:28px;">💵</span>' +
+          '<div style="text-align:left;">' +
+            '<div style="color:#F5F5F0;font-weight:600;font-size:14px;">Efectivo al recibir</div>' +
+            '<div style="color:#A0A0A0;font-size:12px;">Paga cuando llegue tu pedido</div>' +
+          '</div>' +
+        '</button>' +
+
+        '<button onclick="document.getElementById(\'payMethodModal\').remove();" style="width:100%;background:none;border:none;color:#5A5A5A;padding:10px;cursor:pointer;font-size:13px;margin-top:4px;">Cancelar</button>' +
+      '</div>';
+
+    document.body.appendChild(modal);
+  }
+
+  async function selectPayMethod(method) {
+    var modal = document.getElementById('payMethodModal');
+    if (modal) modal.remove();
 
     var btn = document.getElementById('checkoutBtn');
     btn.textContent = 'Procesando...';
@@ -531,25 +569,65 @@
           deliveryAddress: (tlUser && tlUser.defaultAddress) ? tlUser.defaultAddress : 'Dirección del cliente',
           deliveryLat: 19.4517,
           deliveryLng: -70.6970,
-          paymentMethod: 'CARD',
+          paymentMethod: method,
         }),
       });
       var order = await orderRes.json();
       if (!orderRes.ok) throw new Error(order.error || 'Error creando pedido');
 
-      var intentRes = await fetch(API + '/payments/create-intent', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-        body: JSON.stringify({ orderId: order.id }),
-      });
-      var intentData = await intentRes.json();
-      if (!intentRes.ok) throw new Error(intentData.error || 'Error creando pago');
+      if (method === 'CASH') {
+        // Cash order — confirm immediately, no Stripe needed
+        cart = [];
+        currentShopId = null;
+        currentShopName = null;
+        saveCart();
+        updateCartBadge();
 
-      showStripeModal(intentData.clientSecret, intentData.paymentIntentId, order.id, order.orderNumber);
+        // Close cart sidebar
+        document.getElementById('cartOverlay').classList.remove('open');
+        document.getElementById('cartSidebar').classList.remove('open');
+
+        showOrderConfirmed(order.orderNumber);
+        btn.textContent = 'Proceder al Pago →';
+        btn.disabled = false;
+      } else {
+        // Card — launch Stripe
+        var intentRes = await fetch(API + '/payments/create-intent', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+          body: JSON.stringify({ orderId: order.id }),
+        });
+        var intentData = await intentRes.json();
+        if (!intentRes.ok) throw new Error(intentData.error || 'Error creando pago');
+        showStripeModal(intentData.clientSecret, intentData.paymentIntentId, order.id, order.orderNumber);
+        btn.textContent = 'Proceder al Pago →';
+        btn.disabled = false;
+      }
     } catch(err) {
       alert('Error: ' + err.message);
       btn.textContent = 'Proceder al Pago →';
       btn.disabled = false;
+    }
+  }
+
+  function showOrderConfirmed(orderNumber) {
+    var modal = document.createElement('div');
+    modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px;';
+    modal.innerHTML =
+      '<div style="background:#141414;border:1px solid #2E2E2E;border-radius:16px;padding:40px;width:100%;max-width:420px;text-align:center;">' +
+        '<div style="font-size:56px;margin-bottom:16px;">🎉</div>' +
+        '<h3 style="font-family:Unbounded,sans-serif;font-size:20px;margin-bottom:8px;color:#F5F5F0;">¡Pedido Confirmado!</h3>' +
+        '<p style="color:#A0A0A0;font-size:14px;margin-bottom:8px;">Pedido <strong style="color:#1DDB8B;">' + orderNumber + '</strong></p>' +
+        '<p style="color:#A0A0A0;font-size:13px;margin-bottom:8px;">El vendedor fue notificado y preparará tu pedido pronto.</p>' +
+        '<p style="color:#FFD94A;font-size:13px;margin-bottom:24px;">💵 Pago en efectivo al recibir</p>' +
+        '<button onclick="this.closest(\'div\').parentElement.remove();" style="background:#FF3C2F;color:#fff;border:none;padding:12px 28px;border-radius:50px;font-size:14px;font-weight:600;cursor:pointer;">Continuar Comprando</button>' +
+      '</div>';
+    document.body.appendChild(modal);
+
+    var tb = document.getElementById('trackingBar');
+    if (tb) {
+      document.getElementById('trackingText').textContent = 'Pedido ' + orderNumber + ' — ¡Confirmado! Seguir →';
+      tb.classList.add('visible');
     }
   }
 
