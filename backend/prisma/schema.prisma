@@ -1,0 +1,503 @@
+// TraemeLoo - Prisma Database Schema
+// Run: npx prisma migrate dev --name init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ================================
+// ENUMS
+// ================================
+
+enum UserRole {
+  CUSTOMER
+  SELLER
+  DRIVER
+  ADMIN
+}
+
+enum UserStatus {
+  ACTIVE
+  SUSPENDED
+  PENDING
+}
+
+enum ShopStatus {
+  PENDING_REVIEW
+  ACTIVE
+  SUSPENDED
+  CLOSED
+}
+
+enum ProductStatus {
+  ACTIVE
+  OUT_OF_STOCK
+  HIDDEN
+}
+
+enum OrderStatus {
+  PENDING          // Waiting for seller to accept
+  ACCEPTED         // Seller accepted
+  PREPARING        // Seller is preparing
+  READY            // Ready for pickup
+  ASSIGNED         // Driver assigned
+  PICKED_UP        // Driver picked up from shop
+  EN_ROUTE         // Driver heading to customer
+  DELIVERED        // Successfully delivered
+  CANCELLED        // Cancelled by customer or seller
+  REJECTED         // Rejected by seller
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+}
+
+enum PaymentMethod {
+  CASH
+  CARD
+  TRANSFER
+}
+
+enum DriverStatus {
+  OFFLINE
+  ONLINE
+  BUSY
+}
+
+enum PayoutStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+// ================================
+// USERS
+// ================================
+
+model User {
+  id          String     @id @default(uuid())
+  phone       String     @unique
+  email       String?    @unique
+  name        String
+  password    String
+  role        UserRole   @default(CUSTOMER)
+  status      UserStatus @default(ACTIVE)
+  avatarUrl   String?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  // Relations
+  customer    Customer?
+  seller      Seller?
+  driver      Driver?
+  admin       Admin?
+  sessions    Session[]
+  notifications Notification[]
+
+  @@map("users")
+}
+
+model Session {
+  id           String   @id @default(uuid())
+  userId       String
+  refreshToken String   @unique
+  expiresAt    DateTime
+  createdAt    DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+// ================================
+// CUSTOMER
+// ================================
+
+model Customer {
+  id              String   @id @default(uuid())
+  userId          String   @unique
+  defaultAddress  String?
+  defaultLat      Float?
+  defaultLng      Float?
+  createdAt       DateTime @default(now())
+
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  orders    Order[]
+  addresses Address[]
+  favorites Favorite[]
+
+  @@map("customers")
+}
+
+model Address {
+  id         String   @id @default(uuid())
+  customerId String
+  label      String   // "Casa", "Trabajo", etc.
+  address    String
+  lat        Float
+  lng        Float
+  isDefault  Boolean  @default(false)
+  createdAt  DateTime @default(now())
+
+  customer Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  orders   Order[]
+
+  @@map("addresses")
+}
+
+model Favorite {
+  id         String   @id @default(uuid())
+  customerId String
+  shopId     String
+  createdAt  DateTime @default(now())
+
+  customer Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  shop     Shop     @relation(fields: [shopId], references: [id], onDelete: Cascade)
+
+  @@unique([customerId, shopId])
+  @@map("favorites")
+}
+
+// ================================
+// SELLER & SHOP
+// ================================
+
+model Seller {
+  id        String   @id @default(uuid())
+  userId    String   @unique
+  createdAt DateTime @default(now())
+
+  user User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  shop Shop?
+
+  @@map("sellers")
+}
+
+model Shop {
+  id           String     @id @default(uuid())
+  sellerId     String     @unique
+  name         String
+  description  String?
+  logoUrl      String?
+  bannerUrl    String?
+  category     String
+  address      String
+  lat          Float
+  lng          Float
+  phone        String?
+  status       ShopStatus @default(PENDING_REVIEW)
+  isOpen       Boolean    @default(false)
+  openTime     String?    // "08:00"
+  closeTime    String?    // "22:00"
+  rating       Float      @default(0)
+  totalRatings Int        @default(0)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  seller    Seller     @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+  products  Product[]
+  orders    Order[]
+  favorites Favorite[]
+  payouts   Payout[]
+  zones     ShopZone[]
+
+  @@map("shops")
+}
+
+model ShopZone {
+  id     String @id @default(uuid())
+  shopId String
+  zoneId String
+
+  shop Shop         @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  zone DeliveryZone @relation(fields: [zoneId], references: [id], onDelete: Cascade)
+
+  @@unique([shopId, zoneId])
+  @@map("shop_zones")
+}
+
+// ================================
+// PRODUCTS
+// ================================
+
+model Product {
+  id          String        @id @default(uuid())
+  shopId      String
+  name        String
+  description String?
+  imageUrl    String?
+  price       Float
+  stock       Int           @default(0)
+  status      ProductStatus @default(ACTIVE)
+  category    String?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  shop       Shop        @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  orderItems OrderItem[]
+
+  @@map("products")
+}
+
+// ================================
+// ORDERS
+// ================================
+
+model Order {
+  id              String        @id @default(uuid())
+  orderNumber     String        @unique // TL-2851
+  customerId      String
+  shopId          String
+  driverId        String?
+  addressId       String?
+  deliveryAddress String
+  deliveryLat     Float
+  deliveryLng     Float
+  status          OrderStatus   @default(PENDING)
+  paymentStatus   PaymentStatus @default(PENDING)
+  paymentMethod   PaymentMethod @default(CASH)
+  subtotal        Float
+  deliveryFee     Float
+  discount        Float         @default(0)
+  total           Float
+  notes           String?
+  promoCode       String?
+  estimatedMinutes Int?
+  pickedUpAt      DateTime?
+  deliveredAt     DateTime?
+  cancelledAt     DateTime?
+  cancelReason    String?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  customer    Customer    @relation(fields: [customerId], references: [id])
+  shop        Shop        @relation(fields: [shopId], references: [id])
+  driver      Driver?     @relation(fields: [driverId], references: [id])
+  address     Address?    @relation(fields: [addressId], references: [id])
+  items       OrderItem[]
+  tracking    OrderTracking[]
+  rating      OrderRating?
+  payment     Payment?
+
+  @@map("orders")
+}
+
+model OrderItem {
+  id        String @id @default(uuid())
+  orderId   String
+  productId String
+  name      String // snapshot at time of order
+  price     Float  // snapshot at time of order
+  quantity  Int
+  subtotal  Float
+
+  order   Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id])
+
+  @@map("order_items")
+}
+
+model OrderTracking {
+  id        String      @id @default(uuid())
+  orderId   String
+  status    OrderStatus
+  message   String?
+  lat       Float?
+  lng       Float?
+  createdAt DateTime    @default(now())
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@map("order_tracking")
+}
+
+model OrderRating {
+  id             String   @id @default(uuid())
+  orderId        String   @unique
+  shopRating     Int      // 1-5
+  driverRating   Int?     // 1-5
+  shopComment    String?
+  driverComment  String?
+  createdAt      DateTime @default(now())
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@map("order_ratings")
+}
+
+// ================================
+// PAYMENTS
+// ================================
+
+model Payment {
+  id              String        @id @default(uuid())
+  orderId         String        @unique
+  amount          Float
+  method          PaymentMethod
+  status          PaymentStatus @default(PENDING)
+  transactionId   String?       // from CardNet / payment gateway
+  gatewayResponse String?       // raw JSON from gateway
+  paidAt          DateTime?
+  createdAt       DateTime      @default(now())
+
+  order Order @relation(fields: [orderId], references: [id])
+
+  @@map("payments")
+}
+
+model Payout {
+  id          String       @id @default(uuid())
+  shopId      String
+  amount      Float        // amount after commission
+  commission  Float        // platform's cut
+  grossAmount Float        // before commission
+  status      PayoutStatus @default(PENDING)
+  periodStart DateTime
+  periodEnd   DateTime
+  paidAt      DateTime?
+  notes       String?
+  createdAt   DateTime     @default(now())
+
+  shop Shop @relation(fields: [shopId], references: [id])
+
+  @@map("payouts")
+}
+
+// ================================
+// DRIVER
+// ================================
+
+model Driver {
+  id           String       @id @default(uuid())
+  userId       String       @unique
+  licenseNum   String?
+  vehicleType  String?      // "moto", "carro", "bicicleta"
+  vehiclePlate String?
+  status       DriverStatus @default(OFFLINE)
+  currentLat   Float?
+  currentLng   Float?
+  rating       Float        @default(0)
+  totalRatings Int          @default(0)
+  zoneId       String?
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  user   User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  zone   DeliveryZone? @relation(fields: [zoneId], references: [id])
+  orders Order[]
+  earnings DriverEarning[]
+
+  @@map("drivers")
+}
+
+model DriverEarning {
+  id        String   @id @default(uuid())
+  driverId  String
+  orderId   String
+  amount    Float
+  tip       Float    @default(0)
+  total     Float
+  paidAt    DateTime?
+  createdAt DateTime @default(now())
+
+  driver Driver @relation(fields: [driverId], references: [id])
+
+  @@map("driver_earnings")
+}
+
+// ================================
+// DELIVERY ZONES
+// ================================
+
+model DeliveryZone {
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  isActive    Boolean  @default(true)
+  baseFee     Float    @default(80)
+  createdAt   DateTime @default(now())
+
+  drivers Driver[]
+  shops   ShopZone[]
+
+  @@map("delivery_zones")
+}
+
+// ================================
+// ADMIN
+// ================================
+
+model Admin {
+  id        String   @id @default(uuid())
+  userId    String   @unique
+  isSuperAdmin Boolean @default(false)
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("admins")
+}
+
+// ================================
+// NOTIFICATIONS
+// ================================
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String
+  title     String
+  body      String
+  type      String   // "order_update", "payout", "promo", etc.
+  data      Json?
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notifications")
+}
+
+// ================================
+// PROMO CODES
+// ================================
+
+model PromoCode {
+  id             String    @id @default(uuid())
+  code           String    @unique
+  description    String?
+  discountType   String    // "percent" | "fixed"
+  discountValue  Float
+  minOrderAmount Float     @default(0)
+  maxUses        Int?
+  usedCount      Int       @default(0)
+  isActive       Boolean   @default(true)
+  expiresAt      DateTime?
+  createdAt      DateTime  @default(now())
+
+  @@map("promo_codes")
+}
+
+// ================================
+// PLATFORM CONFIG
+// ================================
+
+model PlatformConfig {
+  id                    String   @id @default(uuid())
+  commissionPercent     Float    @default(15)
+  baseDeliveryFee       Float    @default(80)
+  driverPayPerDelivery  Float    @default(120)
+  freeDeliveryThreshold Float    @default(3000)
+  updatedAt             DateTime @updatedAt
+
+  @@map("platform_config")
+}
