@@ -150,16 +150,16 @@
   </div>
   <nav class="sidebar-nav">
     <div class="nav-group-label">Principal</div>
-    <div class="nav-item active" onclick="setNav(this)"><span class="icon">📊</span>Panel Principal</div>
-    <div class="nav-item" onclick="setNav(this)"><span class="icon">📦</span>Pedidos<span class="badge">5</span></div>
-    <div class="nav-item" onclick="setNav(this)"><span class="icon">🏷️</span>Productos</div>
+    <div class="nav-item active" onclick="showSection('dashboard', this)"><span class="icon">📊</span>Panel Principal</div>
+    <div class="nav-item" onclick="showSection('orders', this)"><span class="icon">📦</span>Pedidos<span class="badge" id="pendingBadge">0</span></div>
+    <div class="nav-item" onclick="showSection('products', this)"><span class="icon">🏷️</span>Productos</div>
     <div class="nav-group-label">Finanzas</div>
-    <div class="nav-item" onclick="setNav(this)"><span class="icon">💰</span>Ganancias</div>
-    <div class="nav-item" onclick="setNav(this)"><span class="icon">🏦</span>Pagos</div>
+    <div class="nav-item" onclick="showSection('earnings', this)"><span class="icon">💰</span>Ganancias</div>
+    <div class="nav-item" onclick="showSection('payouts', this)"><span class="icon">🏦</span>Pagos</div>
     <div class="nav-group-label">Configuración</div>
-    <div class="nav-item" onclick="setNav(this)"><span class="icon">🏪</span>Perfil de Tienda</div>
-    <div class="nav-item" onclick="setNav(this)"><span class="icon">🕐</span>Horarios y Zonas</div>
-    <div class="nav-item" onclick="setNav(this)"><span class="icon">🔔</span>Notificaciones</div>
+    <div class="nav-item" onclick="showSection('profile', this)"><span class="icon">🏪</span>Perfil de Tienda</div>
+    <div class="nav-item" onclick="showSection('profile', this)"><span class="icon">🕐</span>Horarios y Zonas</div>
+    <div class="nav-item" onclick="showSection('profile', this)"><span class="icon">🔔</span>Notificaciones</div>
   </nav>
   <div class="sidebar-footer">
     <div class="shop-profile">
@@ -174,7 +174,7 @@
 
 <main class="main">
   <div class="topbar">
-    <div class="topbar-title">Panel Principal</div>
+    <div class="topbar-title" id="topbarTitle">Panel Principal</div>
     <div class="topbar-actions">
       <button class="topbar-btn secondary">📤 Exportar Reporte</button>
       <button class="topbar-btn" onclick="openProductModal()">+ Agregar Producto</button>
@@ -182,8 +182,8 @@
   </div>
 
   <div class="content">
-
-    <div class="stats-grid">
+    <!-- DASHBOARD SECTION -->
+    <div id="section-dashboard">
       <div class="stat-card green">
         <div class="stat-icon">💰</div>
         <div class="stat-val green" id="statRevenue">RD$48,200</div>
@@ -192,19 +192,19 @@
       </div>
       <div class="stat-card red">
         <div class="stat-icon">📦</div>
-        <div class="stat-val red">23</div>
+        <div class="stat-val red" id="statOrders">23</div>
         <div class="stat-label">Pedidos Hoy</div>
         <div class="stat-change">↑ 8% vs ayer</div>
       </div>
       <div class="stat-card yellow">
         <div class="stat-icon">⏳</div>
-        <div class="stat-val yellow">5</div>
+        <div class="stat-val yellow" id="statPending">5</div>
         <div class="stat-label">Pedidos Pendientes</div>
         <div class="stat-change neg">Requiere atención</div>
       </div>
       <div class="stat-card blue">
         <div class="stat-icon">⭐</div>
-        <div class="stat-val blue">4.9</div>
+        <div class="stat-val blue" id="statRating">4.9</div>
         <div class="stat-label">Calificación</div>
         <div class="stat-change">↑ 0.1 esta semana</div>
       </div>
@@ -297,6 +297,68 @@
       </div>
     </div>
   </div>
+  <!-- END DASHBOARD SECTION -->
+  </div>
+
+  <!-- ORDERS SECTION -->
+  <div id="section-orders" style="display:none;">
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">Todos los Pedidos</div>
+        <div class="order-filters">
+          <button class="filter-btn active" onclick="filterOrders(this,'all')">Todos</button>
+          <button class="filter-btn" onclick="filterOrders(this,'PENDING')">Nuevos</button>
+          <button class="filter-btn" onclick="filterOrders(this,'PREPARING')">Preparando</button>
+          <button class="filter-btn" onclick="filterOrders(this,'READY')">Listos</button>
+          <button class="filter-btn" onclick="filterOrders(this,'DELIVERED')">Entregados</button>
+        </div>
+      </div>
+      <div class="order-list" id="orderListFull">
+        <div style="padding:20px;color:var(--text3);text-align:center;">Cargando...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PRODUCTS SECTION -->
+  <div id="section-products" style="display:none;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+      <div class="panel-title" style="font-family:'Unbounded',sans-serif;font-size:16px;">Mis Productos</div>
+      <button class="topbar-btn" onclick="openProductModal()">+ Agregar Producto</button>
+    </div>
+    <div class="panel">
+      <div id="productListFull">
+        <div style="padding:20px;color:var(--text3);">Cargando...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- EARNINGS SECTION -->
+  <div id="section-earnings" style="display:none;">
+    <div class="panel" style="padding:32px;text-align:center;">
+      <div style="font-size:48px;margin-bottom:16px;">💰</div>
+      <div style="font-family:'Unbounded',sans-serif;font-size:20px;margin-bottom:8px;">Ganancias</div>
+      <div style="color:var(--text2);font-size:14px;">Próximamente — reportes detallados de ingresos y comisiones.</div>
+    </div>
+  </div>
+
+  <!-- PAYOUTS SECTION -->
+  <div id="section-payouts" style="display:none;">
+    <div class="panel" style="padding:32px;text-align:center;">
+      <div style="font-size:48px;margin-bottom:16px;">🏦</div>
+      <div style="font-family:'Unbounded',sans-serif;font-size:20px;margin-bottom:8px;">Pagos</div>
+      <div style="color:var(--text2);font-size:14px;">Próximamente — historial de pagos y solicitudes de retiro.</div>
+    </div>
+  </div>
+
+  <!-- PROFILE SECTION -->
+  <div id="section-profile" style="display:none;">
+    <div class="panel" style="padding:32px;text-align:center;">
+      <div style="font-size:48px;margin-bottom:16px;">🏪</div>
+      <div style="font-family:'Unbounded',sans-serif;font-size:20px;margin-bottom:8px;">Perfil de Tienda</div>
+      <div style="color:var(--text2);font-size:14px;">Próximamente — edita el nombre, horario y zona de entrega de tu tienda.</div>
+    </div>
+  </div>
+
 </main>
 
 <!-- MODAL AGREGAR PRODUCTO -->
@@ -347,16 +409,103 @@
   const tlUser = JSON.parse(localStorage.getItem('tl_user') || 'null');
 
   // ================================
-  // NAV & UI HELPERS
+  // SECTION NAVIGATION
   // ================================
+  const sections = ['dashboard', 'orders', 'products', 'earnings', 'payouts', 'profile'];
+  const sectionTitles = {
+    dashboard: 'Panel Principal',
+    orders: 'Pedidos',
+    products: 'Productos',
+    earnings: 'Ganancias',
+    payouts: 'Pagos',
+    profile: 'Perfil de Tienda',
+  };
+
+  function showSection(name, navEl) {
+    // Hide all sections
+    sections.forEach(function(s) {
+      var el = document.getElementById('section-' + s);
+      if (el) el.style.display = 'none';
+    });
+    // Show selected
+    var target = document.getElementById('section-' + name);
+    if (target) target.style.display = 'block';
+    // Update nav
+    document.querySelectorAll('.nav-item').forEach(function(n) { n.classList.remove('active'); });
+    if (navEl) navEl.classList.add('active');
+    // Update topbar title
+    var title = document.getElementById('topbarTitle');
+    if (title) title.textContent = sectionTitles[name] || name;
+    // Load data for section
+    if (name === 'orders') loadOrdersFull();
+    if (name === 'products') loadProductsFull();
+  }
+
   function setNav(el) {
-    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(function(n) { n.classList.remove('active'); });
     el.classList.add('active');
   }
+  // Load orders for dedicated orders section
+  async function loadOrdersFull(statusFilter) {
+    var container = document.getElementById('orderListFull');
+    if (!container) return;
+    container.innerHTML = '<div style="padding:20px;color:var(--text3);text-align:center;">Cargando pedidos...</div>';
+    try {
+      var url = API + '/orders?limit=100';
+      if (statusFilter) url += '&status=' + statusFilter;
+      var res = await fetch(url, { headers: { 'Authorization': 'Bearer ' + token } });
+      var data = await res.json();
+      var orders = data.orders || [];
+      if (orders.length === 0) {
+        container.innerHTML = '<div style="padding:32px;color:var(--text3);text-align:center;">No hay pedidos con este filtro.</div>';
+        return;
+      }
+      container.innerHTML = orders.map(function(o) { return buildOrderRow(o); }).join('');
+    } catch(e) {
+      container.innerHTML = '<div style="padding:20px;color:var(--brand);">Error: ' + e.message + '</div>';
+    }
+  }
+
+  // Load products for dedicated products section
+  async function loadProductsFull() {
+    var container = document.getElementById('productListFull');
+    if (!container) return;
+    try {
+      var res = await fetch(API + '/sellers/me', { headers: { 'Authorization': 'Bearer ' + token } });
+      var data = await res.json();
+      var products = (data.shop && data.shop.products) ? data.shop.products : [];
+      if (products.length === 0) {
+        container.innerHTML = '<div style="padding:20px;color:var(--text3);">No tienes productos. ¡Agrega uno!</div>';
+        return;
+      }
+      container.innerHTML = products.map(function(p) {
+        var isActive = p.status === 'ACTIVE';
+        return '<div class="product-row">' +
+          '<div class="product-row-img">📦</div>' +
+          '<div class="product-row-info">' +
+            '<div class="product-row-name">' + p.name + '</div>' +
+            '<div class="product-row-stock ' + (p.stock <= 3 ? 'stock-low' : '') + '">Existencia: ' + p.stock + ' unidades' + (p.stock === 0 ? ' — Agotado ⚠️' : p.stock <= 3 ? ' ⚠️' : '') + '</div>' +
+          '</div>' +
+          '<div class="product-row-price">RD$' + p.price.toLocaleString() + '</div>' +
+          '<button class="stock-toggle ' + (isActive ? '' : 'off') + '" onclick="toggleProductStatus(\'' + p.id + '\', this)"></button>' +
+        '</div>';
+      }).join('');
+    } catch(e) {
+      container.innerHTML = '<div style="padding:20px;color:var(--brand);">Error cargando productos.</div>';
+    }
+  }
+
+  // Filter for full orders section
   function filterOrders(el, status) {
-    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.filter-btn').forEach(function(b) { b.classList.remove('active'); });
     el.classList.add('active');
-    loadOrders(status === 'all' ? null : status);
+    // Check which orders container is visible
+    var fullSection = document.getElementById('section-orders');
+    if (fullSection && fullSection.style.display !== 'none') {
+      loadOrdersFull(status === 'all' ? null : status);
+    } else {
+      loadOrders(status === 'all' ? null : status);
+    }
   }
   function showToast(msg, color) {
     const t = document.getElementById('toast');
@@ -383,6 +532,8 @@
       document.getElementById('statOrders').textContent = data.todayOrders || 0;
       document.getElementById('statPending').textContent = data.pendingOrders || 0;
       document.getElementById('statRating').textContent = data.rating ? parseFloat(data.rating).toFixed(1) : '-';
+      var badge = document.getElementById('pendingBadge');
+      if (badge) badge.textContent = data.pendingOrders || 0;
     } catch(e) { console.log('Dashboard error:', e); }
   }
 
