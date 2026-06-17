@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { API } from "@/lib/api";
+import OrderDetail from "@/components/OrderDetail";
 import "./admin.css";
 
 function rd(n) {
@@ -54,6 +55,7 @@ export default function AdminPanel() {
   const [orders, setOrders] = useState(null);
   const [toast, setToast] = useState(null);
   const [busy, setBusy] = useState(null); // id being acted on
+  const [selectedId, setSelectedId] = useState(null);
   const toastTimer = useRef(null);
 
   const token = () => (typeof window !== "undefined" ? localStorage.getItem("tl_token") : null);
@@ -215,7 +217,7 @@ export default function AdminPanel() {
                   <div className="muted-pad">No hay pedidos activos en este momento.</div>
                 ) : (
                   stats.liveOrders.map((o) => (
-                    <div className="live-order-row" key={o.id}>
+                    <div className="live-order-row" key={o.id} style={{ cursor: "pointer" }} onClick={() => setSelectedId(o.id)}>
                       <div className="lo-id">#{o.orderNumber}</div>
                       <div className="lo-info">
                         <div className="lo-name">{o.shop?.name || "Tienda"} → {o.customer?.user?.name || "Cliente"}</div>
@@ -310,7 +312,7 @@ export default function AdminPanel() {
                     {orders === null && <tr><td colSpan={6}><div className="muted-pad">Cargando pedidos...</div></td></tr>}
                     {orders && orders.length === 0 && <tr><td colSpan={6}><div className="muted-pad">No hay pedidos.</div></td></tr>}
                     {orders && orders.map((o) => (
-                      <tr key={o.id}>
+                      <tr key={o.id} style={{ cursor: "pointer" }} onClick={() => setSelectedId(o.id)}>
                         <td><div className="td-name">#{o.orderNumber}</div></td>
                         <td>{o.shop?.name || "—"}</td>
                         <td>{o.customer?.user?.name || "—"}</td>
@@ -333,6 +335,7 @@ export default function AdminPanel() {
       </main>
 
       {toast && <div className="admin-toast" style={{ background: toast.color }}>{toast.msg}</div>}
+      <OrderDetail orderId={selectedId} onClose={() => setSelectedId(null)} />
     </div>
   );
 }

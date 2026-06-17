@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { API } from "@/lib/api";
+import OrderDetail from "@/components/OrderDetail";
 import "./perfil.css";
 
 function rd(n) {
@@ -27,6 +28,7 @@ export default function Perfil() {
   const [orders, setOrders] = useState(null);
   const [addr, setAddr] = useState("");
   const [saved, setSaved] = useState(false);
+  const [selectedId, setSelectedId] = useState(null);
 
   useEffect(() => {
     try {
@@ -118,7 +120,7 @@ export default function Perfil() {
                 : "";
               const items = o.items || [];
               return (
-                <div className="order-card" key={o.id}>
+                <div className="order-card" key={o.id} style={{ cursor: "pointer" }} onClick={() => setSelectedId(o.id)}>
                   <div className="oc-top">
                     <span className="oc-id">#{o.orderNumber}</span>
                     <span className={"oc-status " + cls}>{label}</span>
@@ -139,6 +141,8 @@ export default function Perfil() {
             })}
         </section>
       </main>
+
+      <OrderDetail orderId={selectedId} onClose={() => setSelectedId(null)} />
     </div>
   );
 }
