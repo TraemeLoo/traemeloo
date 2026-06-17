@@ -78,8 +78,7 @@ export default function Home() {
 
   function handleAuth() {
     if (user) {
-      localStorage.clear();
-      window.location.reload();
+      window.location.href = "/perfil";
     } else {
       window.location.href = "/login";
     }

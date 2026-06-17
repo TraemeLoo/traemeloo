@@ -1,0 +1,43 @@
+/* Customer profile page — scoped under .perfil-page. Brand vars come from globals.css. */
+
+.perfil-page { min-height: 100vh; background: var(--bg); color: var(--text); font-family: var(--font-dm-sans), sans-serif; }
+
+.perfil-page .perfil-nav { position: sticky; top: 0; z-index: 50; background: rgba(10,10,10,0.85); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border); height: 64px; display: flex; align-items: center; gap: 16px; padding: 0 24px; }
+.perfil-page .logo { font-family: var(--font-unbounded), sans-serif; font-weight: 900; font-size: 22px; color: var(--brand); letter-spacing: -1px; cursor: pointer; }
+.perfil-page .logo span { color: var(--text); }
+.perfil-page .back-link { margin-left: auto; color: var(--text2); text-decoration: none; font-size: 14px; }
+.perfil-page .back-link:hover { color: var(--brand); }
+
+.perfil-page .perfil-main { max-width: 640px; margin: 0 auto; padding: 28px 20px 60px; }
+
+.perfil-page .profile-card { display: flex; align-items: center; gap: 16px; background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; margin-bottom: 28px; }
+.perfil-page .avatar { width: 52px; height: 52px; border-radius: 50%; background: var(--brand); color: #fff; display: flex; align-items: center; justify-content: center; font-family: var(--font-unbounded), sans-serif; font-weight: 700; font-size: 22px; flex-shrink: 0; }
+.perfil-page .p-name { font-family: var(--font-unbounded), sans-serif; font-size: 18px; font-weight: 700; }
+.perfil-page .p-sub { color: var(--text2); font-size: 13px; margin-top: 2px; }
+.perfil-page .logout-btn { margin-left: auto; background: var(--bg3); border: 1.5px solid var(--border); color: var(--text2); padding: 8px 16px; border-radius: 50px; cursor: pointer; font-family: var(--font-dm-sans), sans-serif; font-size: 13px; transition: all .2s; flex-shrink: 0; }
+.perfil-page .logout-btn:hover { border-color: var(--brand); color: var(--brand); }
+
+.perfil-page .block { margin-bottom: 28px; }
+.perfil-page .block-title { font-family: var(--font-unbounded), sans-serif; font-size: 15px; font-weight: 700; margin-bottom: 14px; }
+.perfil-page .addr-field { width: 100%; background: var(--bg3); border: 1.5px solid var(--border); color: var(--text); border-radius: var(--radius-sm); padding: 12px 14px; font-family: var(--font-dm-sans), sans-serif; font-size: 14px; outline: none; min-height: 60px; resize: vertical; box-sizing: border-box; }
+.perfil-page .addr-field:focus { border-color: var(--brand); }
+.perfil-page .save-btn { margin-top: 10px; background: var(--brand); color: #fff; border: none; padding: 10px 20px; border-radius: 50px; cursor: pointer; font-family: var(--font-dm-sans), sans-serif; font-weight: 600; font-size: 14px; transition: background .2s; }
+.perfil-page .save-btn:hover { background: var(--brand-dark); }
+.perfil-page .hint { font-size: 12px; color: var(--text3); margin-top: 8px; }
+.perfil-page .muted { color: var(--text3); padding: 16px 0; }
+
+.perfil-page .order-card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 16px; margin-bottom: 12px; }
+.perfil-page .oc-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.perfil-page .oc-id { font-family: var(--font-unbounded), sans-serif; font-size: 13px; font-weight: 700; color: var(--brand); }
+.perfil-page .oc-status { font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 50px; }
+.perfil-page .st-yellow { background: rgba(255,217,74,0.15); color: var(--yellow); }
+.perfil-page .st-blue { background: rgba(91,155,255,0.15); color: #5B9BFF; }
+.perfil-page .st-orange { background: rgba(255,140,66,0.15); color: #FF8C42; }
+.perfil-page .st-green { background: rgba(29,219,139,0.15); color: var(--green); }
+.perfil-page .st-red { background: rgba(255,60,47,0.15); color: var(--brand-light); }
+.perfil-page .oc-shop { font-weight: 600; font-size: 15px; margin-bottom: 4px; }
+.perfil-page .oc-items { color: var(--text2); font-size: 13px; margin-bottom: 12px; line-height: 1.5; }
+.perfil-page .oc-addr { color: var(--text3); font-size: 12px; margin-bottom: 12px; }
+.perfil-page .oc-bottom { display: flex; align-items: center; justify-content: space-between; }
+.perfil-page .oc-date { color: var(--text3); font-size: 12px; }
+.perfil-page .oc-total { font-weight: 700; font-size: 15px; }
