@@ -205,6 +205,11 @@ export default function SellerPortal() {
     }
   }
 
+  function logout() {
+    localStorage.clear();
+    window.location.href = "/login";
+  }
+
   if (!ready) return null;
 
   const pending = stats.pendingOrders || 0;
@@ -282,7 +287,7 @@ export default function SellerPortal() {
     <div className="seller-app">
       {/* SIDEBAR */}
       <aside className="sidebar">
-        <div className="sidebar-logo">
+        <div className="sidebar-logo" style={{ cursor: "pointer" }} onClick={() => setSection("dashboard")}>
           Traeme<span>Loo</span>
           <small>Portal del Vendedor</small>
         </div>
@@ -305,12 +310,13 @@ export default function SellerPortal() {
           ))}
         </nav>
         <div className="sidebar-footer">
-          <div className="shop-profile">
+          <div className="shop-profile" style={{ cursor: "pointer" }} onClick={logout} title="Cerrar sesión">
             <div className="shop-avatar">🏪</div>
             <div className="shop-profile-info">
               <div className="shop-profile-name">{shopName}</div>
               <div className="shop-profile-status"><div className="status-dot" />Abierto para pedidos</div>
             </div>
+            <span style={{ fontSize: 16, color: "var(--text2)" }}>⏻</span>
           </div>
         </div>
       </aside>
@@ -322,6 +328,7 @@ export default function SellerPortal() {
           <div className="topbar-actions">
             <button className="topbar-btn secondary" onClick={() => showToast("Reporte exportado")}>📤 Exportar Reporte</button>
             <button className="topbar-btn" onClick={() => setModalOpen(true)}>+ Agregar Producto</button>
+            <button className="topbar-btn secondary" onClick={logout}>Salir</button>
           </div>
         </div>
 
