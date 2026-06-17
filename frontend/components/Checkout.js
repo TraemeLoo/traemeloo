@@ -27,19 +27,21 @@ const cancelBtn = {
   width: "100%", background: "none", border: "none", color: "#5A5A5A",
   padding: 10, cursor: "pointer", fontSize: 13, marginTop: 4,
 };
+const primaryBtn = {
+  width: "100%", background: "#FF3C2F", color: "#fff", border: "none",
+  padding: 14, borderRadius: 10, fontSize: 15, fontWeight: 600, cursor: "pointer",
+  fontFamily: "var(--font-dm-sans), sans-serif", marginTop: 8,
+};
+const addrLabel = { display: "block", fontSize: 12, color: "#A0A0A0", margin: "0 0 6px" };
+const addrInput = {
+  width: "100%", background: "#1E1E1E", border: "1.5px solid #2E2E2E", color: "#F5F5F0",
+  borderRadius: 10, padding: "11px 13px", fontFamily: "var(--font-dm-sans), sans-serif",
+  fontSize: 14, outline: "none", marginBottom: 14, boxSizing: "border-box",
+};
 
 function authHeaders() {
   const token = typeof window !== "undefined" ? localStorage.getItem("tl_token") : null;
   return { "Content-Type": "application/json", Authorization: "Bearer " + token };
-}
-
-function userAddress() {
-  try {
-    const u = JSON.parse(localStorage.getItem("tl_user") || "null");
-    return u && u.defaultAddress ? u.defaultAddress : "Dirección del cliente";
-  } catch {
-    return "Dirección del cliente";
-  }
 }
 
 // ---- Stripe card form (inner; must live inside <Elements>) ----
@@ -116,20 +118,32 @@ function CardForm({ clientSecret, order, total, onPaid, onCancel }) {
 
 export default function Checkout({ open, onClose }) {
   const { cart, shop, total, clearCart } = useCart();
-  const [step, setStep] = useState("method"); // method | card | done
+  const [step, setStep] = useState("address"); // address | method | card | done
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState(null);
   const [order, setOrder] = useState(null);
   const [clientSecret, setClientSecret] = useState(null);
   const [stripePromise, setStripePromise] = useState(null);
+  const [addr, setAddr] = useState("");
+  const [ref, setRef] = useState("");
 
   useEffect(() => {
     if (open) {
-      setStep("method");
+      setStep("address");
       setProcessing(false);
       setError(null);
       setOrder(null);
       setClientSecret(null);
+      // Prefill from last-used address, then the saved profile default.
+      try {
+        const saved = JSON.parse(localStorage.getItem("tl_address") || "null");
+        const u = JSON.parse(localStorage.getItem("tl_user") || "null");
+        setAddr((saved && saved.addr) || (u && u.defaultAddress) || "");
+        setRef((saved && saved.ref) || "");
+      } catch {
+        setAddr("");
+        setRef("");
+      }
     }
   }, [open]);
 
@@ -149,7 +163,7 @@ export default function Checkout({ open, onClose }) {
         body: JSON.stringify({
           shopId: shop.id,
           items: cart.map((i) => ({ productId: i.productId, quantity: i.quantity })),
-          deliveryAddress: userAddress(),
+          deliveryAddress: ref.trim() ? `${addr.trim()} (${ref.trim()})` : addr.trim(),
           deliveryLat: 19.4517,
           deliveryLng: -70.697,
           paymentMethod: method,
@@ -188,6 +202,46 @@ export default function Checkout({ open, onClose }) {
     }
   }
 
+  function proceedToMethod() {
+    if (!addr.trim()) { setError("Ingresa tu dirección de entrega"); return; }
+    setError(null);
+    try { localStorage.setItem("tl_address", JSON.stringify({ addr: addr.trim(), ref: ref.trim() })); } catch {}
+    setStep("method");
+  }
+
+  // ---- ADDRESS ----
+  if (step === "address") {
+    return (
+      <div style={overlay} onClick={(e) => e.target === e.currentTarget && onClose()}>
+        <div style={box}>
+          <h3 style={{ fontFamily: "var(--font-unbounded), sans-serif", fontSize: 18, marginBottom: 6 }}>
+            ¿Dónde lo entregamos?
+          </h3>
+          <p style={{ color: "#A0A0A0", fontSize: 13, marginBottom: 20 }}>
+            Escribe tu dirección para que el motorista te encuentre.
+          </p>
+          <label style={addrLabel}>Dirección</label>
+          <textarea
+            value={addr}
+            onChange={(e) => setAddr(e.target.value)}
+            placeholder="Calle, número, sector, ciudad"
+            style={{ ...addrInput, minHeight: 64, resize: "vertical" }}
+          />
+          <label style={addrLabel}>Referencia (opcional)</label>
+          <input
+            value={ref}
+            onChange={(e) => setRef(e.target.value)}
+            placeholder="Casa azul, portón negro, cerca de…"
+            style={addrInput}
+          />
+          {error && <div style={{ color: "#FF6B61", fontSize: 13, marginBottom: 10 }}>{error}</div>}
+          <button onClick={proceedToMethod} style={primaryBtn}>Continuar →</button>
+          <button onClick={onClose} style={cancelBtn}>Cancelar</button>
+        </div>
+      </div>
+    );
+  }
+
   // ---- METHOD PICKER ----
   if (step === "method") {
     return (
@@ -214,7 +268,10 @@ export default function Checkout({ open, onClose }) {
               <div style={{ color: "#A0A0A0", fontSize: 12 }}>Paga cuando llegue tu pedido</div>
             </span>
           </button>
-          <button style={cancelBtn} disabled={processing} onClick={onClose}>
+          <button style={cancelBtn} disabled={processing} onClick={() => setStep("address")}>
+            ← Cambiar dirección
+          </button>
+          <button style={{ ...cancelBtn, marginTop: 0 }} disabled={processing} onClick={onClose}>
             {processing ? "Procesando..." : "Cancelar"}
           </button>
         </div>

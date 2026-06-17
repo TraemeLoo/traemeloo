@@ -14,7 +14,9 @@
 .seller-app .sidebar-logo { padding: 24px 20px; border-bottom: 1px solid var(--border); font-family: var(--font-unbounded), sans-serif; font-weight: 900; font-size: 18px; color: var(--brand); }
 .seller-app .sidebar-logo span { color: var(--text); }
 .seller-app .sidebar-logo small { display: block; font-size: 10px; color: var(--text3); font-family: var(--font-dm-sans), sans-serif; font-weight: 400; margin-top: 2px; letter-spacing: 1px; text-transform: uppercase; }
-.seller-app .sidebar-nav { flex: 1; padding: 16px 12px; }
+.seller-app .sidebar-nav { flex: 1; padding: 16px 12px; display: flex; flex-direction: column; }
+.seller-app .sidebar-nav > div { display: block; width: 100%; }
+.seller-app .nav-item-nowrap, .seller-app .nav-item { white-space: nowrap; }
 .seller-app .nav-group-label { font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: 1.5px; padding: 0 8px; margin: 16px 0 6px; }
 .seller-app .nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: var(--radius-sm); cursor: pointer; transition: all .15s; font-size: 14px; color: var(--text2); margin-bottom: 2px; }
 .seller-app .nav-item:hover { background: var(--bg3); color: var(--text); }
