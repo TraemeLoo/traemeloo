@@ -1,0 +1,137 @@
+/* Seller portal styles — scoped under .seller-app. Palette overrides live on .seller-app. */
+
+.seller-app {
+  --bg: #0D0F12; --bg2: #151719; --bg3: #1C1E22; --surface: #232629;
+  --border: #2A2D32; --text: #F0F0EB; --text2: #8A8F9A; --text3: #4A4F5A;
+  --green: #1DDB8B; --yellow: #FFD94A; --orange: #FF8C42; --blue: #4A9EFF;
+  --sidebar-w: 240px; --radius: 14px; --radius-sm: 9px;
+
+  display: flex; min-height: 100vh; background: var(--bg); color: var(--text);
+  font-family: var(--font-dm-sans), sans-serif;
+}
+
+.seller-app .sidebar { width: var(--sidebar-w); flex-shrink: 0; background: var(--bg2); border-right: 1px solid var(--border); display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh; overflow-y: auto; }
+.seller-app .sidebar-logo { padding: 24px 20px; border-bottom: 1px solid var(--border); font-family: var(--font-unbounded), sans-serif; font-weight: 900; font-size: 18px; color: var(--brand); }
+.seller-app .sidebar-logo span { color: var(--text); }
+.seller-app .sidebar-logo small { display: block; font-size: 10px; color: var(--text3); font-family: var(--font-dm-sans), sans-serif; font-weight: 400; margin-top: 2px; letter-spacing: 1px; text-transform: uppercase; }
+.seller-app .sidebar-nav { flex: 1; padding: 16px 12px; }
+.seller-app .nav-group-label { font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: 1.5px; padding: 0 8px; margin: 16px 0 6px; }
+.seller-app .nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: var(--radius-sm); cursor: pointer; transition: all .15s; font-size: 14px; color: var(--text2); margin-bottom: 2px; }
+.seller-app .nav-item:hover { background: var(--bg3); color: var(--text); }
+.seller-app .nav-item.active { background: rgba(255,60,47,0.12); color: var(--brand); font-weight: 500; }
+.seller-app .nav-item .icon { font-size: 17px; width: 20px; text-align: center; }
+.seller-app .nav-item .badge { margin-left: auto; background: var(--brand); color: #fff; font-size: 11px; font-weight: 700; padding: 2px 7px; border-radius: 50px; }
+.seller-app .sidebar-footer { padding: 16px 12px; border-top: 1px solid var(--border); }
+.seller-app .shop-profile { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: var(--radius-sm); background: var(--bg3); }
+.seller-app .shop-avatar { font-size: 28px; }
+.seller-app .shop-profile-info { flex: 1; }
+.seller-app .shop-profile-name { font-size: 13px; font-weight: 600; }
+.seller-app .shop-profile-status { font-size: 11px; color: var(--green); display: flex; align-items: center; gap: 4px; }
+.seller-app .status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); }
+
+.seller-app .main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+.seller-app .topbar { background: var(--bg2); border-bottom: 1px solid var(--border); padding: 0 28px; height: 60px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 50; }
+.seller-app .topbar-title { font-family: var(--font-unbounded), sans-serif; font-size: 16px; font-weight: 700; }
+.seller-app .topbar-actions { display: flex; align-items: center; gap: 12px; }
+.seller-app .topbar-btn { background: var(--brand); color: #fff; border: none; cursor: pointer; font-family: var(--font-dm-sans), sans-serif; font-weight: 600; font-size: 13px; padding: 8px 18px; border-radius: 50px; transition: background .2s; display: flex; align-items: center; gap: 6px; }
+.seller-app .topbar-btn:hover { background: var(--brand-dark); }
+.seller-app .topbar-btn.secondary { background: var(--bg3); color: var(--text); border: 1.5px solid var(--border); }
+.seller-app .topbar-btn.secondary:hover { border-color: var(--brand); color: var(--brand); }
+
+.seller-app .content { padding: 28px; flex: 1; }
+.seller-app .stats-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 16px; margin-bottom: 28px; }
+.seller-app .stat-card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; position: relative; overflow: hidden; transition: border-color .2s; }
+.seller-app .stat-card:hover { border-color: var(--brand); }
+.seller-app .stat-card::before { content: ''; position: absolute; top: 0; right: 0; width: 80px; height: 80px; border-radius: 50%; transform: translate(30%,-30%); }
+.seller-app .stat-card.green::before { background: rgba(29,219,139,0.08); }
+.seller-app .stat-card.red::before { background: rgba(255,60,47,0.08); }
+.seller-app .stat-card.yellow::before { background: rgba(255,217,74,0.08); }
+.seller-app .stat-card.blue::before { background: rgba(74,158,255,0.08); }
+.seller-app .stat-icon { font-size: 24px; margin-bottom: 12px; }
+.seller-app .stat-val { font-family: var(--font-unbounded), sans-serif; font-size: 26px; font-weight: 700; margin-bottom: 4px; }
+.seller-app .stat-val.green { color: var(--green); }
+.seller-app .stat-val.red { color: var(--brand); }
+.seller-app .stat-val.yellow { color: var(--yellow); }
+.seller-app .stat-val.blue { color: var(--blue); }
+.seller-app .stat-label { font-size: 13px; color: var(--text2); }
+.seller-app .stat-change { font-size: 12px; margin-top: 6px; color: var(--green); }
+.seller-app .stat-change.neg { color: var(--brand); }
+
+.seller-app .main-grid { display: grid; grid-template-columns: 1.4fr 1fr; gap: 20px; }
+.seller-app .panel { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+.seller-app .panel-header { padding: 18px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+.seller-app .panel-title { font-family: var(--font-unbounded), sans-serif; font-size: 14px; font-weight: 700; }
+.seller-app .order-filters { display: flex; gap: 6px; flex-wrap: wrap; }
+.seller-app .filter-btn { background: none; border: 1px solid var(--border); color: var(--text2); padding: 4px 12px; border-radius: 50px; font-size: 12px; cursor: pointer; transition: all .15s; font-family: var(--font-dm-sans), sans-serif; }
+.seller-app .filter-btn.active { background: var(--brand); border-color: var(--brand); color: #fff; }
+.seller-app .order-row { padding: 14px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 14px; transition: background .15s; }
+.seller-app .order-row:last-child { border-bottom: none; }
+.seller-app .order-row:hover { background: var(--bg3); }
+.seller-app .order-id { font-family: var(--font-unbounded), sans-serif; font-size: 12px; color: var(--brand); font-weight: 700; flex-shrink: 0; }
+.seller-app .order-customer { flex: 1; min-width: 0; }
+.seller-app .order-name { font-size: 14px; font-weight: 500; }
+.seller-app .order-items-count { font-size: 12px; color: var(--text2); margin-top: 2px; }
+.seller-app .order-total { font-weight: 700; font-size: 15px; flex-shrink: 0; }
+.seller-app .order-status { padding: 4px 12px; border-radius: 50px; font-size: 11px; font-weight: 700; flex-shrink: 0; }
+.seller-app .status-new { background: rgba(255,217,74,0.15); color: var(--yellow); }
+.seller-app .status-preparing { background: rgba(74,158,255,0.15); color: var(--blue); }
+.seller-app .status-ready { background: rgba(255,140,66,0.15); color: var(--orange); }
+.seller-app .status-delivered { background: rgba(29,219,139,0.15); color: var(--green); }
+.seller-app .order-actions { display: flex; gap: 6px; flex-shrink: 0; }
+.seller-app .action-btn { background: var(--bg3); border: 1px solid var(--border); color: var(--text); padding: 5px 10px; border-radius: 6px; font-size: 12px; cursor: pointer; transition: all .15s; font-family: var(--font-dm-sans), sans-serif; }
+.seller-app .action-btn:hover { background: var(--green); border-color: var(--green); color: #000; }
+.seller-app .action-btn.danger:hover { background: var(--brand); border-color: var(--brand); color: #fff; }
+
+.seller-app .right-col { display: flex; flex-direction: column; gap: 20px; }
+.seller-app .product-row { padding: 12px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 12px; transition: background .15s; }
+.seller-app .product-row:last-child { border-bottom: none; }
+.seller-app .product-row:hover { background: var(--bg3); }
+.seller-app .product-row-img { width: 40px; height: 40px; border-radius: 8px; background: var(--bg3); display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0; }
+.seller-app .product-row-info { flex: 1; min-width: 0; }
+.seller-app .product-row-name { font-size: 13px; font-weight: 500; }
+.seller-app .product-row-stock { font-size: 12px; color: var(--text2); margin-top: 2px; }
+.seller-app .stock-low { color: var(--brand) !important; }
+.seller-app .product-row-price { font-weight: 700; font-size: 14px; color: var(--green); }
+.seller-app .stock-toggle { width: 36px; height: 20px; border-radius: 10px; background: var(--green); cursor: pointer; position: relative; transition: background .2s; border: none; flex-shrink: 0; }
+.seller-app .stock-toggle::after { content: ''; position: absolute; width: 14px; height: 14px; background: #fff; border-radius: 50%; top: 3px; right: 4px; transition: right .2s; }
+.seller-app .stock-toggle.off { background: var(--surface); }
+.seller-app .stock-toggle.off::after { right: 18px; }
+
+.seller-app .chart-area { padding: 20px; display: flex; flex-direction: column; gap: 12px; }
+.seller-app .mini-chart { display: flex; align-items: flex-end; gap: 4px; height: 60px; }
+.seller-app .bar { flex: 1; border-radius: 4px 4px 0 0; background: var(--brand); opacity: 0.6; transition: opacity .2s; }
+.seller-app .bar:hover { opacity: 1; }
+.seller-app .bar.today { opacity: 1; }
+.seller-app .chart-labels { display: flex; gap: 4px; }
+.seller-app .chart-label { flex: 1; text-align: center; font-size: 10px; color: var(--text3); }
+.seller-app .revenue-num { font-family: var(--font-unbounded), sans-serif; font-size: 24px; font-weight: 700; color: var(--green); }
+
+.seller-app .placeholder-panel { padding: 32px; text-align: center; }
+.seller-app .placeholder-panel .big { font-size: 48px; margin-bottom: 16px; }
+.seller-app .placeholder-panel .t { font-family: var(--font-unbounded), sans-serif; font-size: 20px; margin-bottom: 8px; }
+.seller-app .placeholder-panel .d { color: var(--text2); font-size: 14px; }
+
+.seller-toast { position: fixed; bottom: 24px; right: 24px; color: #000; padding: 14px 20px; border-radius: 9px; font-weight: 600; font-size: 14px; z-index: 999; box-shadow: 0 8px 32px rgba(0,0,0,0.4); }
+
+.seller-modal-bg { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 500; display: flex; align-items: center; justify-content: center; padding: 20px; }
+.seller-modal-box { background: #151719; border: 1px solid #2A2D32; border-radius: 14px; padding: 28px; width: 480px; max-width: 95vw; color: #F0F0EB; }
+.seller-modal-box h3 { font-family: var(--font-unbounded), sans-serif; font-size: 18px; margin-bottom: 20px; }
+.seller-modal-box .form-group { margin-bottom: 16px; }
+.seller-modal-box .form-group label { display: block; font-size: 13px; color: #8A8F9A; margin-bottom: 6px; }
+.seller-modal-box .form-group input, .seller-modal-box .form-group select, .seller-modal-box .form-group textarea { width: 100%; background: #1C1E22; border: 1.5px solid #2A2D32; color: #F0F0EB; border-radius: 9px; padding: 10px 14px; font-family: var(--font-dm-sans), sans-serif; font-size: 14px; outline: none; transition: border-color .2s; }
+.seller-modal-box .form-group input:focus, .seller-modal-box .form-group select:focus, .seller-modal-box .form-group textarea:focus { border-color: var(--brand); }
+.seller-modal-box .form-group textarea { resize: vertical; min-height: 80px; }
+.seller-modal-box .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.seller-modal-box .modal-actions { display: flex; gap: 10px; margin-top: 20px; justify-content: flex-end; }
+.seller-modal-box .btn-cancel { background: #1C1E22; border: 1.5px solid #2A2D32; color: #8A8F9A; padding: 10px 20px; border-radius: 9px; cursor: pointer; font-family: var(--font-dm-sans), sans-serif; font-size: 14px; }
+.seller-modal-box .btn-cancel:hover { color: #F0F0EB; }
+.seller-modal-box .btn-save { background: var(--brand); color: #fff; border: none; padding: 10px 24px; border-radius: 9px; cursor: pointer; font-family: var(--font-dm-sans), sans-serif; font-weight: 600; font-size: 14px; }
+.seller-modal-box .btn-save:hover { background: var(--brand-dark); }
+
+.seller-app .muted-pad { padding: 24px; color: var(--text3); text-align: center; }
+
+@media (max-width: 900px) {
+  .seller-app .stats-grid { grid-template-columns: repeat(2,1fr); }
+  .seller-app .main-grid { grid-template-columns: 1fr; }
+  .seller-app .sidebar { display: none; }
+}
