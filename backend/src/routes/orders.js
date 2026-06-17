@@ -159,7 +159,11 @@ router.get('/', authenticate, async (req, res, next) => {
       where.shopId = seller.shop.id;
     } else if (req.user.role === 'DRIVER') {
       const driver = await prisma.driver.findUnique({ where: { userId: req.user.id } });
-      where.driverId = driver.id;
+      // Drivers see their own assigned orders PLUS the open pool of unassigned READY orders.
+      where.OR = [
+        { driverId: driver.id },
+        { status: 'READY', driverId: null },
+      ];
     }
 
     if (status) where.status = status;
@@ -223,7 +227,7 @@ router.patch('/:id/status', authenticate, async (req, res, next) => {
 
     // Permission checks
     const sellerStatuses = ['ACCEPTED', 'PREPARING', 'READY', 'REJECTED'];
-    const driverStatuses = ['PICKED_UP', 'EN_ROUTE', 'DELIVERED'];
+    const driverStatuses = ['ASSIGNED', 'PICKED_UP', 'EN_ROUTE', 'DELIVERED'];
     const customerStatuses = ['CANCELLED'];
 
     if (req.user.role === 'SELLER' && !sellerStatuses.includes(status)) {
@@ -237,6 +241,11 @@ router.patch('/:id/status', authenticate, async (req, res, next) => {
     }
 
     const updateData = { status };
+    // When a driver accepts (claims) an order, link it to them.
+    if (req.user.role === 'DRIVER' && status === 'ASSIGNED') {
+      const claimDriver = await prisma.driver.findUnique({ where: { userId: req.user.id } });
+      if (claimDriver) updateData.driverId = claimDriver.id;
+    }
     if (status === 'PICKED_UP') updateData.pickedUpAt = new Date();
     if (status === 'DELIVERED') updateData.deliveredAt = new Date();
     if (status === 'CANCELLED') updateData.cancelledAt = new Date();
